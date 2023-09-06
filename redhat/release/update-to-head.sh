@@ -16,7 +16,7 @@
 
 # The local git repo must have a remote "upstream" pointing
 # to upstream sigstore/timestamp-authority , and a remote "origin"
-# pointing to securesign/timestamp-authority 
+# pointing to securesign/timestamp-authority
 
 # Synchs the release-next branch to either the upstream `main` branch
 # or a provided git-ref (typically an upstream release tag) and then triggers CI.
@@ -61,6 +61,12 @@ fi
 # Update redhat's main and take all needed files from there.
 git fetch origin $midstream_ref
 git checkout origin/$midstream_ref $custom_files
+
+# RHTAP writes its pipeline files to the root of ${redhat_ref}
+# Fetch those from origin and apply them to the the release branch
+# since we just wiped out our local copy with the upstream ref.
+git fetch origin $redhat_ref
+git checkout origin/$redhat_ref .tekton
 
 # Apply midstream patches
 if [[ -d redhat/patches ]]; then
