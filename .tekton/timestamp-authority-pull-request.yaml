@@ -30,6 +30,10 @@ spec:
     value: .
   - name: revision
     value: '{{revision}}'
+  - name: hermetic
+    value: "true"
+  - name: prefetch-input
+    value: [{"path": ".", "type": "gomod"}, {"path": "./hack/tools", "type": "gomod"}]
   pipelineSpec:
     finally:
     - name: show-sbom
@@ -95,11 +99,11 @@ spec:
       description: Skip optional checks, set false if you want to run optional checks
       name: skip-optional
       type: string
-    - default: "true"
+    - default: "false"
       description: Execute the build with network isolation
       name: hermetic
       type: string
-    - default: [{"path": ".", "type": "gomod"}, {"path": "./hack/tools", "type": "gomod"}]
+    - default: ""
       description: Build dependencies to be prefetched by Cachi2
       name: prefetch-input
       type: string
