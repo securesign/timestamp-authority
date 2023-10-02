@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.20.7@sha256:bc5f0b5e43282627279fe5262ae275fecb3d2eae3b33977a7fd200c7a760d6f1 AS builder
+FROM registry.access.redhat.com/ubi9/go-toolset@sha256:e91cbbd0b659498d029dd43e050c8a009c403146bfba22cbebca8bcd0ee7925f AS builder
 ENV APP_ROOT=/opt/app-root
 ENV GOPATH=$APP_ROOT
 
@@ -28,18 +28,24 @@ ARG SERVER_LDFLAGS
 RUN go build -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
 RUN CGO_ENABLED=0 go build -gcflags "all=-N -l" -ldflags "${SERVER_LDFLAGS}" -o timestamp-server_debug ./cmd/timestamp-server
 
+# debug compile options & debugger
+FROM registry.access.redhat.com/ubi9/go-toolset@sha256:e91cbbd0b659498d029dd43e050c8a009c403146bfba22cbebca8bcd0ee7925f as debug
+RUN go install github.com/go-delve/delve/cmd/dlv@v1.9.0
+
+# overwrite server and include debugger
+COPY --from=builder /opt/app-root/src/timestamp-server_debug /usr/local/bin/timestamp-server
+
 # Multi-Stage production build
-FROM golang:1.20.7@sha256:bc5f0b5e43282627279fe5262ae275fecb3d2eae3b33977a7fd200c7a760d6f1 as deploy
+FROM registry.access.redhat.com/ubi9/go-toolset@sha256:e91cbbd0b659498d029dd43e050c8a009c403146bfba22cbebca8bcd0ee7925f as deploy
+
+LABEL description="The timestamp-authority is a process that provides a timestamp record of when a document was created or modified."
+LABEL io.k8s.description="The timestamp-authority is a process that provides a timestamp record of when a document was created or modified."
+LABEL io.k8s.display-name="Timestamp-authority container image for Red Hat Trusted Signer."
+LABEL io.openshift.tags="TSA trusted-signer."
+LABEL summary="Provides a timestamp-authority image."
 
 # Retrieve the binary from the previous stage
 COPY --from=builder /opt/app-root/src/timestamp-server /usr/local/bin/timestamp-server
 
 # Set the binary as the entrypoint of the container
 CMD ["timestamp-server", "serve"]
-
-# debug compile options & debugger
-FROM deploy as debug
-RUN go install github.com/go-delve/delve/cmd/dlv@v1.9.0
-
-# overwrite server and include debugger
-COPY --from=builder /opt/app-root/src/timestamp-server_debug /usr/local/bin/timestamp-server
