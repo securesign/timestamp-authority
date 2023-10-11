@@ -43,6 +43,7 @@ LABEL io.k8s.description="The timestamp-authority is a process that provides a t
 LABEL io.k8s.display-name="Timestamp-authority container image for Red Hat Trusted Signer."
 LABEL io.openshift.tags="TSA trusted-signer."
 LABEL summary="Provides a timestamp-authority image."
+LABEL com.redhat.component="timestamp-authority"
 
 # Retrieve the binary from the previous stage
 COPY --from=builder /opt/app-root/src/timestamp-server /usr/local/bin/timestamp-server
