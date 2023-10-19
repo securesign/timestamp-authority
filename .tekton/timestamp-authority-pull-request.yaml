@@ -379,7 +379,7 @@ spec:
         - name: name
           value: go-unit-test
         - name: bundle
-          value: quay.io/securesign/tsa-unit-test@sha256:6868c35f5840966bc510aed6ca42bf8dc02954d662a721d98b2dd5b04326c1f6
+          value: quay.io/securesign/tsa-unit-test@sha256:9e6a48c07c34027656f25d0a0971ea38547135995a2151dfebf18210abfc773f
         - name: kind
           value: task
         resolver: bundles
