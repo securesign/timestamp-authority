@@ -13,11 +13,10 @@ spec:
       workingDir: $(workspaces.source.path)/source
       script: |
         #!/usr/bin/env sh
-        git config --global --add safe.directory /workspace/source
-        CGO_ENABLED=0 go build -trimpath -o bin/timestamp-cli ./cmd/timestamp-cli
-        CGO_ENABLED=0 go build -trimpath -o bin/timestamp-server ./cmd/timestamp-server
+        CGO_ENABLED=0 go build -buildvcs=false -trimpath -o bin/timestamp-cli ./cmd/timestamp-cli
+        CGO_ENABLED=0 go build -buildvcs=false -trimpath -o bin/timestamp-server ./cmd/timestamp-server
         go test ./...
-
+        
 # This file bundles the unit tests for the timestamp-authority. 
 # If any changes are made to this file, it must be pushed to Quay using the following command:
 # 'tkn bundle push quay.io/securesign/tsa-unit-test:v1 -f .tekton/tsa-unit-test.yaml'.
