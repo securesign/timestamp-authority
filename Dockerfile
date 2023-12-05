@@ -25,7 +25,7 @@ ADD ./pkg/ $APP_ROOT/src/pkg/
 
 RUN git config --global --add safe.directory /opt/app-root/src && \
     go mod download && \
-    CGO_ENABLED=0 go build -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
+    CGO_ENABLED=0 go build -mod=readonly -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
 
 # Multi-Stage production build
 FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.21@sha256:98a0ff138c536eee98704d6909699ad5d0725a20573e2c510a60ef462b45cce0 as deploy
