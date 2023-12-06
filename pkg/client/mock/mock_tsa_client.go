@@ -137,7 +137,7 @@ func (c *TSAClient) GetTimestampResponse(params *ts.GetTimestampResponseParams, 
 		tsStruct.Time = c.Time
 	}
 
-	resp, err := tsStruct.CreateResponse(c.CertChain[0], c.Signer)
+	resp, err := tsStruct.CreateResponseWithOpts(c.CertChain[0], c.Signer, crypto.SHA256)
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +152,6 @@ func (c *TSAClient) GetTimestampResponse(params *ts.GetTimestampResponseParams, 
 	return &ts.GetTimestampResponseCreated{Payload: bytes.NewBuffer(resp)}, nil
 }
 
-func (c *TSAClient) SetTransport(transport runtime.ClientTransport) {
+func (c *TSAClient) SetTransport(_ runtime.ClientTransport) {
 	// nothing to do
 }
