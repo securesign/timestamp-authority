@@ -67,18 +67,13 @@ git merge origin/$redhat_ref --no-edit
 git fetch origin $midstream_ref
 git checkout origin/$midstream_ref $custom_files
 
-# Apply midstream patches
-if [[ -d redhat/patches ]]; then
-  git apply redhat/patches/*
-fi
-
 # Move overlays to root
 if [[ -d redhat/overlays ]]; then
   mv redhat/overlays/* .
 fi
 
-git add . # Adds applied patches
-git add $custom_files # Adds custom files
+git rm -rf redhat # remove redhat directory from the release branch
+git add . # Adds applied overlays
 git commit -m "${redhat_files_msg}"
 
 # Trigger CI
