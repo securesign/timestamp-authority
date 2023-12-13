@@ -28,10 +28,17 @@ RUN git config --global --add safe.directory /opt/app-root/src && \
     CGO_ENABLED=0 go build -mod=readonly -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
 
 # Multi-Stage production build
-FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.21@sha256:98a0ff138c536eee98704d6909699ad5d0725a20573e2c510a60ef462b45cce0 as deploy
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:3e313209ac617a92b50350286752311d99ea2dafc429ef0e5311889294b0bc21 as deploy
 
 # Retrieve the binary from the previous stage
 COPY --from=builder /opt/app-root/src/timestamp-server /usr/local/bin/timestamp-server
+
+LABEL description="The timestamp-authority is a process that provides a timestamp record of when a document was created or modified."
+LABEL io.k8s.description="The timestamp-authority is a process that provides a timestamp record of when a document was created or modified."
+LABEL io.k8s.display-name="Timestamp-authority container image for Red Hat Trusted Signer."
+LABEL io.openshift.tags="TSA trusted-signer."
+LABEL summary="Provides a timestamp-authority image."
+LABEL com.redhat.component="timestamp-authority"
 
 # Set the binary as the entrypoint of the container
 CMD ["timestamp-server", "serve"]
