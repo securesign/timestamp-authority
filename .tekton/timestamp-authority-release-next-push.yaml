@@ -22,7 +22,7 @@ spec:
   - name: git-url
     value: '{{repo_url}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtas-tenant/timestamp-authority/timestamp-authority-release-next:{{revision}}
+    value: quay.io/securesign/timestamp-authority-release-next:{{revision}}
   - name: path-context
     value: .
   - name: revision
