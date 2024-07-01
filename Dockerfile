@@ -28,6 +28,13 @@ ARG SERVER_LDFLAGS
 RUN go build -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
 RUN CGO_ENABLED=0 go build -gcflags "all=-N -l" -ldflags "${SERVER_LDFLAGS}" -o timestamp-server_debug ./cmd/timestamp-server
 
+# debug compile options & debugger
+FROM registry.access.redhat.com/ubi9/go-toolset@sha256:82d9bc5d3ceb43635288880f26207201e55d1c688a60ebbfff4f54d4963a62a1 as debug
+RUN go install github.com/go-delve/delve/cmd/dlv@v1.9.0
+
+# overwrite server and include debugger
+COPY --from=builder /opt/app-root/src/timestamp-server_debug /usr/local/bin/timestamp-server
+
 # Multi-Stage production build
 FROM golang:1.21.6@sha256:7b575fe0d9c2e01553b04d9de8ffea6d35ca3ab3380d2a8db2acc8f0f1519a53 as deploy
 
@@ -36,10 +43,3 @@ COPY --from=builder /opt/app-root/src/timestamp-server /usr/local/bin/timestamp-
 
 # Set the binary as the entrypoint of the container
 CMD ["timestamp-server", "serve"]
-
-# debug compile options & debugger
-FROM deploy as debug
-RUN go install github.com/go-delve/delve/cmd/dlv@v1.9.0
-
-# overwrite server and include debugger
-COPY --from=builder /opt/app-root/src/timestamp-server_debug /usr/local/bin/timestamp-server
