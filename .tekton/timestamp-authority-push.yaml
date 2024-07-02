@@ -22,7 +22,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtas-tenant/timestamp-authority/timestamp-authority:{{revision}}
+    value: quay.io/securesign/timestamp-authority:{{revision}}
   - name: dockerfile
     value: Dockerfile.tsa.rh
   - name: build-source-image
