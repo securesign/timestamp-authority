@@ -25,6 +25,12 @@ spec:
     value: quay.io/redhat-user-workloads/rhtas-tenant/timestamp-authority/timestamp-authority:{{revision}}
   - name: dockerfile
     value: Dockerfile.tsa.rh
+  - name: build-source-image
+    value: "true"
+  - name: hermetic
+    value: "true"
+  - name: prefetch-input
+    value: [{"path": ".", "type": "gomod"}, {"path": "./hack/tools", "type": "gomod"}]
   pipelineSpec:
     finally:
     - name: show-sbom
