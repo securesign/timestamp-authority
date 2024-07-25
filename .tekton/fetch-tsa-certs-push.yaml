@@ -6,8 +6,7 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "main"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && (".tekton/fetch-tsa-certs-push.yaml".pathChanged() || "cmd/fetch-tsa-certs".pathChanged() || "pkg".pathChanged() || "Build.mak".pathChanged() || "Dockerfile.fetch_tsa_certs.rh".pathChanged() || "go.mod".pathChanged() || "go.sum".pathChanged() )
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: cli
@@ -22,9 +21,15 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtas-tenant/cli/fetch-tsa-certs:{{revision}}
+    value: quay.io/securesign/fetch-tsa-certs:{{revision}}
   - name: dockerfile
     value: Dockerfile.fetch_tsa_certs.rh
+  - name: build-source-image
+    value: "true"
+  - name: hermetic
+    value: "true"
+  - name: prefetch-input
+    value: [{"path": ".", "type": "gomod"}, {"path": "./hack/tools", "type": "gomod"}]
   pipelineSpec:
     finally:
     - name: show-sbom
