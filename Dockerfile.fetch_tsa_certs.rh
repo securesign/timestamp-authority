@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/go-toolset@sha256:5049a9d9be3914049aa983b66c695047d87c248f5fc95a222a63a15578a376bc as build-env
+FROM registry.access.redhat.com/ubi9/go-toolset@sha256:d73c4151518c73332717a52f5d22c670bf2f88e04a841e507aef0227b3100225 as build-env
 ENV APP_ROOT=/opt/app-root
 ENV GOPATH=$APP_ROOT
 WORKDIR $APP_ROOT/src/
