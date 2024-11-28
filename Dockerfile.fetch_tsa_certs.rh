@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/go-toolset@sha256:d73c4151518c73332717a52f5d22c670bf2f88e04a841e507aef0227b3100225 as build-env
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder@sha256:356986205e66dcc03ef9a9fef5a7a13d6d59c29efacf1d971f9224c678932cf0 as build-env
 ENV APP_ROOT=/opt/app-root
 ENV GOPATH=$APP_ROOT
 WORKDIR $APP_ROOT/src/
@@ -19,7 +19,7 @@ RUN make -f Build.mak cross-platform && \
     gzip fetch_tsa_certs_linux_s390x && \
     gzip fetch_tsa_certs_windows_amd64.exe
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:f5d2c6a1e0c86e4234ea601552dbabb4ced0e013a1efcbfb439f1f6a7a9275b0
+FROM registry.access.redhat.com/ubi9-minimal@sha256:8b6978d555746877c73f52375f60fd7b6fd27d6aca000eaed27d0995303c13de
 ENV APP_ROOT=/opt/app-root
 WORKDIR $APP_ROOT/src/
 
