@@ -76,7 +76,7 @@ gen: $(GENSRC) ## Generate code from OpenAPI spec
 timestamp-cli: $(SRCS) ## Build the TSA CLI
 	CGO_ENABLED=0 go build -trimpath -ldflags "$(CLI_LDFLAGS)" -o bin/timestamp-cli ./cmd/timestamp-cli
 
-timestamp-server: $(SRCS) ## Build the TSA server 
+timestamp-server: $(SRCS) ## Build the TSA server
 	CGO_ENABLED=0 go build -trimpath -ldflags "$(SERVER_LDFLAGS)" -o bin/timestamp-server ./cmd/timestamp-server
 
 test: timestamp-cli ## Run tests
