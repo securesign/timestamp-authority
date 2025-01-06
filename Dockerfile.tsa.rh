@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM registry.access.redhat.com/ubi9/go-toolset@sha256:d73c4151518c73332717a52f5d22c670bf2f88e04a841e507aef0227b3100225 AS builder
+FROM registry.access.redhat.com/ubi9/go-toolset@sha256:3b6d9307fc925bc7d0d231622e6d681844c1d9328818e1ab4a0c47472ae74270 AS builder
 ENV APP_ROOT=/opt/app-root
 ENV GOPATH=$APP_ROOT
 
@@ -27,7 +27,7 @@ RUN git config --global --add safe.directory /opt/app-root/src && \
     CGO_ENABLED=0 go build -mod=readonly -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
 
 # debug compile options & debugger
-FROM registry.access.redhat.com/ubi9/go-toolset@sha256:d73c4151518c73332717a52f5d22c670bf2f88e04a841e507aef0227b3100225 AS debug
+FROM registry.access.redhat.com/ubi9/go-toolset@sha256:3b6d9307fc925bc7d0d231622e6d681844c1d9328818e1ab4a0c47472ae74270 AS debug
 RUN go install github.com/go-delve/delve/cmd/dlv@v1.9.0
 
 # overwrite server and include debugger
