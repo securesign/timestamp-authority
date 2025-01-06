@@ -41,7 +41,6 @@ func addTimestampFlags(cmd *cobra.Command) {
 	cmd.Flags().Var(NewFlagValue(fileFlag, ""), "artifact", "path to an artifact to timestamp")
 	cmd.MarkFlagRequired("artifact") //nolint:errcheck
 	cmd.Flags().String("hash", "sha256", "hash algorithm to use - Valid values are sha256, sha384, and sha512")
-	cmd.MarkFlagRequired("hash") //nolint:errcheck
 	cmd.Flags().Bool("nonce", true, "specify a pseudo-random nonce in the request")
 	cmd.Flags().Bool("certificate", true, "if the timestamp response should contain a certificate chain")
 	cmd.Flags().Var(NewFlagValue(oidFlag, ""), "tsa-policy", "optional dotted OID notation for the policy that the TSA should use to create the response")
@@ -61,13 +60,13 @@ var timestampCmd = &cobra.Command{
 	Use:   "timestamp",
 	Short: "Signed timestamp command",
 	Long:  "Fetches a signed RFC 3161 timestamp. The timestamp response can be verified locally using a timestamp certificate chain.",
-	PreRunE: func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(cmd *cobra.Command, _ []string) error {
 		if err := viper.BindPFlags(cmd.Flags()); err != nil {
 			log.CliLogger.Fatal("Error initializing cmd line args: ", err)
 		}
 		return nil
 	},
-	Run: format.WrapCmd(func(args []string) (interface{}, error) {
+	Run: format.WrapCmd(func(_ []string) (interface{}, error) {
 		return runTimestamp()
 	}),
 }
