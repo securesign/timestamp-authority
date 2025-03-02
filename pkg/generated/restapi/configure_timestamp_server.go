@@ -29,7 +29,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/mitchellh/mapstructure"
 	"github.com/rs/cors"
-	"github.com/urfave/negroni"
+	"github.com/urfave/negroni/v3"
 
 	pkgapi "github.com/sigstore/timestamp-authority/pkg/api"
 	"github.com/sigstore/timestamp-authority/pkg/generated/restapi/operations"
