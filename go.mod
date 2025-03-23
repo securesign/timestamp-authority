@@ -34,7 +34,7 @@ require (
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.19.0
 	github.com/urfave/negroni v1.0.0
-	go.step.sm/crypto v0.57.0
+	go.step.sm/crypto v0.59.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.37.0
 	google.golang.org/protobuf v1.36.5
@@ -43,12 +43,12 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.118.0 // indirect
+	cloud.google.com/go v0.118.2 // indirect
 	cloud.google.com/go/auth v0.15.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.7 // indirect
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
-	cloud.google.com/go/iam v1.3.1 // indirect
-	cloud.google.com/go/kms v1.20.5 // indirect
+	cloud.google.com/go/iam v1.4.0 // indirect
+	cloud.google.com/go/kms v1.21.0 // indirect
 	cloud.google.com/go/longrunning v0.6.4 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.17.0 // indirect
