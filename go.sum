@@ -276,8 +276,8 @@ github.com/sigstore/sigstore/pkg/signature/kms/aws v1.9.1 h1:/YcNq687WnXpIRXl04n
 github.com/sigstore/sigstore/pkg/signature/kms/aws v1.9.1/go.mod h1:ApL9RpKsi7gkSYN0bMNdm/3jZ9EefxMmfYHfUmq2ZYM=
 github.com/sigstore/sigstore/pkg/signature/kms/azure v1.9.1 h1:FnusXyTIInnwfIOzzl5PFilRm1I97dxMSOcCkZBu9Kc=
 github.com/sigstore/sigstore/pkg/signature/kms/azure v1.9.1/go.mod h1:d5m5LOa/69a+t2YC9pDPwS1n2i/PhqB4cUKbpVDlKKE=
-github.com/sigstore/sigstore/pkg/signature/kms/gcp v1.8.15 h1:ThpZMfR2TecI6Ji7s/nFlcCIkwXYhZUYziJdZs3pOaw=
-github.com/sigstore/sigstore/pkg/signature/kms/gcp v1.8.15/go.mod h1:x+4wvq6tzIQRZaSdMS6/VT9nuCoepypozfzP4Tqwnqw=
+github.com/sigstore/sigstore/pkg/signature/kms/gcp v1.9.1 h1:LFiYK1DEWQ6Hf/nroFzBMM+s5rVSjVL45Alpb5Ctl5A=
+github.com/sigstore/sigstore/pkg/signature/kms/gcp v1.9.1/go.mod h1:GFyFmDsE2wDuIHZD+4+JErGpA0S4zJsKNz5l2JVJd8s=
 github.com/sigstore/sigstore/pkg/signature/kms/hashivault v1.9.1 h1:sIW6xe4yU5eIMH8fve2C78d+r29KmHnIb+7po+80bsY=
 github.com/sigstore/sigstore/pkg/signature/kms/hashivault v1.9.1/go.mod h1:3pNf99GnK9eu3XUa5ebHzgEQSVYf9hqAoPFwbwD6O6M=
 github.com/smallstep/assert v0.0.0-20200723003110-82e2b9b3b262 h1:unQFBIznI+VYD1/1fApl1A+9VcBk+9dcqGfnePY87LY=
@@ -344,8 +344,8 @@ golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc h1:O9NuF4s+E/PvMIy+9IUZB9znF
 golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc/go.mod h1:XtvwrStGgqGPLc4cjQfWqZHG1YFdYs6swckp8vpsjnc=
 golang.org/x/net v0.37.0 h1:1zLorHbz+LYj7MQlSf1+2tPIIgibq2eL5xkrGk6f+2c=
 golang.org/x/net v0.37.0/go.mod h1:ivrbrMbzFq5J41QOQh0siUuly180yBYtLp+CKbEaFx8=
-golang.org/x/oauth2 v0.27.0 h1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=
-golang.org/x/oauth2 v0.27.0/go.mod h1:onh5ek6nERTohokkhCD/y2cV4Do3fxFHFuAejCkRWT8=
+golang.org/x/oauth2 v0.28.0 h1:CrgCKl8PPAVtLnU3c+EDw6x11699EWlsDeWNWKdIOkc=
+golang.org/x/oauth2 v0.28.0/go.mod h1:onh5ek6nERTohokkhCD/y2cV4Do3fxFHFuAejCkRWT8=
 golang.org/x/sync v0.12.0 h1:MHc5BpPuC30uJk597Ri8TV3CNZcTLu6B6z4lJy+g6Jw=
 golang.org/x/sync v0.12.0/go.mod h1:1dzgHSNfp02xaA81J2MS99Qcpr2w7fw1gpm99rleRqA=
 golang.org/x/sys v0.0.0-20180823144017-11551d06cbcc/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
