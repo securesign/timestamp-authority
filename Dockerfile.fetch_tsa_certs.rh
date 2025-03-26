@@ -31,6 +31,8 @@ LABEL summary="Provides fetch_tsa_certs images."
 LABEL com.redhat.component="fetch_tsa_certs"
 LABEL name="fetch_tsa_certs"
 
+COPY LICENSE /licenses/license.txt
+
 COPY --from=build-env $APP_ROOT/src/fetch_tsa_certs_darwin_arm64.gz /usr/local/bin/fetch_tsa_certs_darwin_arm64.gz
 COPY --from=build-env $APP_ROOT/src/fetch_tsa_certs_darwin_amd64.gz /usr/local/bin/fetch_tsa_certs_darwin_amd64.gz
 COPY --from=build-env $APP_ROOT/src/fetch_tsa_certs_linux_amd64.gz /usr/local/bin/fetch_tsa_certs_linux_amd64.gz
