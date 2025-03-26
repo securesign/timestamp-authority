@@ -48,5 +48,7 @@ LABEL name="timestamp-authority"
 COPY --from=builder /opt/app-root/src/timestamp-server /usr/local/bin/timestamp-server
 COPY LICENSE /licenses/license.txt
 
+USER 65532:65532
+
 # Set the binary as the entrypoint of the container
 CMD ["timestamp-server", "serve"]
