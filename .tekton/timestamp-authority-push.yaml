@@ -6,7 +6,11 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && (".tekton/timestamp-authority-push.yaml".pathChanged() || "cmd/timestamp-server/***".pathChanged() || "pkg/***".pathChanged() || "Makefile".pathChanged() || "Dockerfile.tsa.rh".pathChanged() || "go.mod".pathChanged() || "go.sum".pathChanged() || "trigger-konflux-builds.txt".pathChanged() )
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
+      == "main" && (".tekton/timestamp-authority-push.yaml".pathChanged() || "cmd/timestamp-server/***".pathChanged()
+      || "pkg/***".pathChanged() || "Makefile".pathChanged() || "Dockerfile.tsa.rh".pathChanged()
+      || "go.mod".pathChanged() || "go.sum".pathChanged() || "trigger-konflux-builds.txt".pathChanged()
+      )
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: timestamp-authority
@@ -31,7 +35,7 @@ spec:
   - name: prefetch-input
     value: '{"type": "gomod", "path": "."}'
   - name: go_unit_test
-    value: true
+    value: "true"
   - name: go_test_command
     value: |
       CGO_ENABLED=0 go build -trimpath -o bin/timestamp-cli ./cmd/timestamp-cli
@@ -39,22 +43,23 @@ spec:
       go test ./...
   - name: go_base_image
     value: brew.registry.redhat.io/rh-osbs/openshift-golang-builder@sha256:356986205e66dcc03ef9a9fef5a7a13d6d59c29efacf1d971f9224c678932cf0
-  taskRunSpecs:
-    - pipelineTaskName: run-unit-test
-      serviceAccountName: appstudio-pipeline
-      podTemplate:
-        imagePullSecrets:
-        - name: brew-registry-pull-secret
   pipelineRef:
-    resolver: git
     params:
-      - name: url
-        value: 'https://github.com/securesign/pipelines.git'
-      - name: revision
-        value: 'main'
-      - name: pathInRepo
-        value: 'pipelines/docker-build-oci-ta.yaml'
-  taskRunTemplate: {}
+    - name: url
+      value: https://github.com/securesign/pipelines.git
+    - name: revision
+      value: main
+    - name: pathInRepo
+      value: pipelines/docker-build-oci-ta.yaml
+    resolver: git
+  taskRunSpecs:
+  - pipelineTaskName: run-unit-test
+    podTemplate:
+      imagePullSecrets:
+      - name: brew-registry-pull-secret
+    serviceAccountName: appstudio-pipeline
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-timestamp-authority
   workspaces:
   - name: git-auth
     secret:
