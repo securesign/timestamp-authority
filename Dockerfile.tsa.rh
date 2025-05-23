@@ -34,7 +34,7 @@ RUN go install github.com/go-delve/delve/cmd/dlv@v1.9.0
 COPY --from=builder /opt/app-root/src/timestamp-server_debug /usr/local/bin/timestamp-server
 
 # Multi-Stage production build
-FROM registry.access.redhat.com/ubi9-minimal@sha256:4c8830d349732ed8066544e1cbcf878ad64f39aa4364f13cf4a69954b0ccbda5 as deploy
+FROM registry.access.redhat.com/ubi9-minimal@sha256:aca8052836f670988f68139b46ddc6bacded7c40bd49962971ee5e3b1f8bc1f8 as deploy
 
 LABEL description="The timestamp-authority is a process that provides a timestamp record of when a document was created or modified."
 LABEL io.k8s.description="The timestamp-authority is a process that provides a timestamp record of when a document was created or modified."
