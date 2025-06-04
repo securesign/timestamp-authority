@@ -1,6 +1,7 @@
 module github.com/sigstore/timestamp-authority/hack/tools
 
-go 1.22.0
+go 1.23.6
+
 toolchain go1.24.1
 
 require github.com/go-swagger/go-swagger v0.31.0
