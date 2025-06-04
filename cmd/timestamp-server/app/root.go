@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/go-chi/chi/middleware"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/sigstore/timestamp-authority/pkg/log"
 	"github.com/spf13/cobra"
@@ -60,6 +61,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&httpPingOnly, "http-ping-only", false, "serve only /ping in the http server")
 	rootCmd.PersistentFlags().String("timestamp-signer", "memory", "Timestamping authority signer. Valid options include: [kms, tink, memory, file]. Memory and file-based signers should only be used for testing")
 	rootCmd.PersistentFlags().String("timestamp-signer-hash", "sha256", "Hash algorithm used by the signer. Must match the hash algorithm specified for a KMS or Tink key. Valid options include: [sha256, sha384, sha512]. Ignored for Memory signer.")
+	rootCmd.PersistentFlags().Bool("include-chain-in-response", false, "Whether to include the issuing chain in the timestamp response when certReq is set in the timestamp request. When false, only the leaf certificate is included in the response.")
 	// KMS flags
 	rootCmd.PersistentFlags().String("kms-key-resource", "", "KMS key for signing timestamp responses. Valid options include: [gcpkms://resource, azurekms://resource, hashivault://resource, awskms://resource]")
 	// Tink flags
@@ -74,6 +76,8 @@ func init() {
 	// NTP time introspection
 	rootCmd.PersistentFlags().String("ntp-monitoring", "", "Path to a file configuring ntp monitoring. Uses pkg/ntpmonitor/ntpsync.yaml as the default configuration if none is provided")
 	rootCmd.PersistentFlags().Bool("disable-ntp-monitoring", false, "Disables NTP monitoring. Defaults to false")
+
+	rootCmd.PersistentFlags().String("http-request-id-header-name", middleware.RequestIDHeader, "name of HTTP Request Header to use as request correlation ID")
 
 	if err := viper.BindPFlags(rootCmd.PersistentFlags()); err != nil {
 		log.Logger.Fatal(err)

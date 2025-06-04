@@ -33,9 +33,15 @@ import (
 	"github.com/sigstore/timestamp-authority/pkg/client"
 	"github.com/sigstore/timestamp-authority/pkg/generated/client/timestamp"
 	"github.com/sigstore/timestamp-authority/pkg/x509"
+	"github.com/spf13/viper"
 
 	"github.com/go-openapi/runtime"
+	"go.uber.org/goleak"
 )
+
+func TestMain(m *testing.M) {
+	goleak.VerifyTestMain(m)
+}
 
 // TestSigner encapsulates a public key for verification
 type TestSigner struct {
@@ -83,6 +89,7 @@ type timestampTestCase struct {
 	includeCerts bool
 	policyOID    asn1.ObjectIdentifier
 	hash         crypto.Hash
+	issuingChain bool
 }
 
 func TestGetTimestampResponse(t *testing.T) {
@@ -108,6 +115,15 @@ func TestGetTimestampResponse(t *testing.T) {
 			hash:         hashFunc,
 		},
 		{
+			name:         "Request with Full Issuing Chain",
+			reqMediaType: client.TimestampQueryMediaType,
+			reqBytes:     buildTimestampQueryReq(t, []byte(testArtifact), opts),
+			nonce:        testNonce,
+			includeCerts: includeCerts,
+			hash:         hashFunc,
+			issuingChain: true,
+		},
+		{
 			name:         "JSON Request",
 			reqMediaType: client.JSONMediaType,
 			reqBytes:     buildJSONReq(t, []byte(testArtifact), hashFunc, hashName, includeCerts, testNonce, ""),
@@ -118,7 +134,12 @@ func TestGetTimestampResponse(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		url := createServer(t)
+		var url string
+		if !tc.issuingChain {
+			url = createServer(t, func() { viper.Set("include-chain-in-response", false) })
+		} else {
+			url = createServer(t, func() { viper.Set("include-chain-in-response", true) })
+		}
 
 		c, err := client.GetTimestampClient(url, client.WithContentType(tc.reqMediaType))
 		if err != nil {
@@ -144,11 +165,29 @@ func TestGetTimestampResponse(t *testing.T) {
 		}
 
 		// check certificate fields
-		if len(tsr.Certificates) != 1 {
-			t.Fatalf("test '%s': expected 1 certificate, got %d", tc.name, len(tsr.Certificates))
-		}
 		if !tsr.AddTSACertificate {
 			t.Fatalf("test '%s': expected TSA certificate", tc.name)
+		}
+		if !tc.issuingChain {
+			if len(tsr.Certificates) != 1 {
+				t.Fatalf("test '%s': expected 1 certificate, got %d", tc.name, len(tsr.Certificates))
+			}
+			if tsr.Certificates[0].Subject.CommonName != "Test TSA Timestamping" {
+				t.Fatalf("test '%s': expected subject to be 'Test TSA Timestamping', got %s", tc.name, tsr.Certificates[0].Subject.CommonName)
+			}
+		} else {
+			if len(tsr.Certificates) != 3 {
+				t.Fatalf("test '%s': expected 3 certificates, got %d", tc.name, len(tsr.Certificates))
+			}
+			if tsr.Certificates[0].Subject.CommonName != "Test TSA Timestamping" {
+				t.Fatalf("test '%s': expected subject to be 'Test TSA Timestamping', got %s", tc.name, tsr.Certificates[0].Subject.CommonName)
+			}
+			if tsr.Certificates[1].Subject.CommonName != "Test TSA Intermediate" {
+				t.Fatalf("test '%s': expected subject to be 'Test TSA Intermediate', got %s", tc.name, tsr.Certificates[1].Subject.CommonName)
+			}
+			if tsr.Certificates[2].Subject.CommonName != "Test TSA Root" {
+				t.Fatalf("test '%s': expected subject to be 'Test TSA Root', got %s", tc.name, tsr.Certificates[2].Subject.CommonName)
+			}
 		}
 		// check nonce
 		if tsr.Nonce.Cmp(tc.nonce) != 0 {
