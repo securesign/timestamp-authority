@@ -1,3 +1,74 @@
+# v1.2.8
+
+## Features
+
+* Allow full issuing chain in response (#1082)
+* Relax EKU chaining rules verification for intermediate certs (#1078)
+
+# v1.2.7
+
+## Features
+
+* fetch-tsa-certs: Add "--org-name" (#1056)
+
+## Bug Fixes
+
+* Fix: Disallow timestamp requests where digest length is inconsistent with hash algorithm (#1066)
+* Fix --http-ping-only flag to not affect https listener (#1051)
+
+# v1.2.6
+
+## Features
+
+* allow operators to customize the HTTP header used to customize request correlation IDs (#1026)
+
+## Bug Fixes
+
+* Do not assume leaf certificate is first in chain (#1040)
+
+# v1.2.5
+
+### Enhancements
+
+* Exposes validity period of signing certificate as prometheus metric for monitoring
+* fetch-tsa-certs now supports fetching a self-signed certificate chain
+
+## Changes
+
+### Bug fixes
+
+* Minor tweaks to CI configuration for hardening
+
+### Misc
+
+* Add fuzzing coverage with oss-fuzz
+* Dependabot updates
+
+# v1.2.4
+
+## Changes
+
+### Bug fixes
+
+* Fix timestamp response to always be returned in GMT
+
+### Misc
+
+* Relax go directive to permit 1.22.x
+* Dependabot updates
+
+# v1.2.3
+
+## Changes
+
+### Bug fixes
+
+* Don't mark hash argument as required in timestamp-cli
+
+### Misc
+
+* Dependabot updates
+
 # v1.2.2
 
 ## Changes

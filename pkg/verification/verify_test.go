@@ -182,7 +182,9 @@ func TestVerifyLeafCert(t *testing.T) {
 	type test struct {
 		useOptsCert         bool
 		useTSCert           bool
+		onlyCACerts         bool
 		expectVerifySuccess bool
+		expectedErrMsg      string
 	}
 
 	tests := []test{
@@ -190,6 +192,7 @@ func TestVerifyLeafCert(t *testing.T) {
 			useOptsCert:         false,
 			useTSCert:           false,
 			expectVerifySuccess: false,
+			expectedErrMsg:      "leaf certificate must be present the in TSR or as a verify option",
 		},
 		{
 			useOptsCert:         true,
@@ -205,6 +208,12 @@ func TestVerifyLeafCert(t *testing.T) {
 			useOptsCert:         true,
 			useTSCert:           true,
 			expectVerifySuccess: true,
+		},
+		// test when a chain only contains CA certificates
+		{
+			onlyCACerts:         true,
+			expectVerifySuccess: false,
+			expectedErrMsg:      "no leaf certificate found in chain",
 		},
 	}
 
@@ -237,10 +246,19 @@ func TestVerifyLeafCert(t *testing.T) {
 			ts.Certificates = []*x509.Certificate{sampleCert}
 		}
 
+		if tc.onlyCACerts {
+			sampleCert.IsCA = true
+			ts.Certificates = []*x509.Certificate{sampleCert}
+		}
+
 		err := verifyLeafCert(ts, opts)
 
 		if err != nil && tc.expectVerifySuccess {
 			t.Fatalf("expected error to be nil, actual error: %v", err)
+		}
+
+		if err != nil && !strings.Contains(err.Error(), tc.expectedErrMsg) {
+			t.Fatalf("expected error message %s, got %s", tc.expectedErrMsg, err.Error())
 		}
 
 		if err == nil && !tc.expectVerifySuccess {
@@ -432,7 +450,7 @@ func TestVerifyESSCertID(t *testing.T) {
 	}
 }
 
-func TestVerifyExtendedKeyUsage(t *testing.T) {
+func TestVerifyLeafExtendedKeyUsage(t *testing.T) {
 	type test struct {
 		eku                 []x509.ExtKeyUsage
 		expectVerifySuccess bool
@@ -458,9 +476,53 @@ func TestVerifyExtendedKeyUsage(t *testing.T) {
 			ExtKeyUsage: tc.eku,
 		}
 
-		err := verifyExtendedKeyUsage(&cert)
+		err := verifyLeafExtendedKeyUsage(&cert)
 		if err != nil && tc.expectVerifySuccess {
-			t.Errorf("expected verifyExtendedKeyUsage to return nil error")
+			t.Errorf("expected verifyLeafExtendedKeyUsage to return nil error")
+		}
+		if err == nil && !tc.expectVerifySuccess {
+			t.Errorf("expected verification to fail")
+		}
+	}
+}
+
+func TestVerifyIntermediateExtendedKeyUsage(t *testing.T) {
+	type test struct {
+		eku                 []x509.ExtKeyUsage
+		expectVerifySuccess bool
+	}
+
+	tests := []test{
+		{
+			eku:                 []x509.ExtKeyUsage{},
+			expectVerifySuccess: true,
+		},
+		{
+			eku:                 []x509.ExtKeyUsage{x509.ExtKeyUsageTimeStamping},
+			expectVerifySuccess: true,
+		},
+		{
+			eku:                 []x509.ExtKeyUsage{x509.ExtKeyUsageTimeStamping, x509.ExtKeyUsageIPSECTunnel},
+			expectVerifySuccess: true,
+		},
+		{
+			eku:                 []x509.ExtKeyUsage{x509.ExtKeyUsageAny, x509.ExtKeyUsageIPSECTunnel},
+			expectVerifySuccess: true,
+		},
+		{
+			eku:                 []x509.ExtKeyUsage{x509.ExtKeyUsageIPSECTunnel},
+			expectVerifySuccess: false,
+		},
+	}
+
+	for _, tc := range tests {
+		cert := x509.Certificate{
+			ExtKeyUsage: tc.eku,
+		}
+
+		err := verifyIntermediateExtendedKeyUsage(&cert)
+		if err != nil && tc.expectVerifySuccess {
+			t.Errorf("expected verifyIntermediateExtendedKeyUsage to return nil error")
 		}
 		if err == nil && !tc.expectVerifySuccess {
 			t.Errorf("expected verification to fail")
