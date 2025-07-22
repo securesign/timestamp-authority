@@ -19,7 +19,7 @@ RUN make -f Build.mak cross-platform && \
     gzip fetch_tsa_certs_linux_s390x && \
     gzip fetch_tsa_certs_windows_amd64.exe
 
-FROM registry.access.redhat.com/ubi9-minimal@sha256:f172b3082a3d1bbe789a1057f03883c1113243564f01cd3020e27548b911d3f8
+FROM registry.access.redhat.com/ubi9-minimal@sha256:4fef3a1e53399e64f839190483711d361455bd18274954ce4bec4845575df83e
 ENV APP_ROOT=/opt/app-root
 WORKDIR $APP_ROOT/src/
 
