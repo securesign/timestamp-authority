@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/go-toolset:9.6@sha256:3ce6311380d5180599a3016031a9112542d43715244816d1d0eabc937952667b as build-env
+FROM registry.redhat.io/ubi9/go-toolset:9.6@sha256:198ee8c19c6b152a94a4c58952151c59efa0207f4f39c05c8b3e8a97b2ed5c0d as build-env
 ENV GOEXPERIMENT=strictfipsruntime
 ENV CGO_ENABLED=1
 ENV APP_ROOT=/opt/app-root
@@ -21,7 +21,7 @@ RUN make -f Build.mak cross-platform && \
     gzip fetch_tsa_certs_linux_s390x && \
     gzip fetch_tsa_certs_windows_amd64.exe
 
-FROM registry.access.redhat.com/ubi9-minimal@sha256:0d7cfb0704f6d389942150a01a20cb182dc8ca872004ebf19010e2b622818926
+FROM registry.access.redhat.com/ubi9-minimal@sha256:295f920819a6d05551a1ed50a6c71cb39416a362df12fa0cd149bc8babafccff
 ENV APP_ROOT=/opt/app-root
 WORKDIR $APP_ROOT/src/
 
