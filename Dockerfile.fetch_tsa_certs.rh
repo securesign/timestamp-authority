@@ -32,7 +32,6 @@ LABEL io.openshift.tags="fetch_tsa_certs"
 LABEL summary="Provides fetch_tsa_certs images."
 LABEL com.redhat.component="fetch_tsa_certs"
 LABEL name="rhtas/fetch-tsa-certs-rhel9"
-LABEL cpe="cpe:/a:redhat:trusted_artifact_signer:1.3::el9"
 
 COPY LICENSE /licenses/license.txt
 
