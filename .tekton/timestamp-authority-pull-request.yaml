@@ -59,6 +59,11 @@ spec:
       imagePullSecrets:
       - name: brew-registry-pull-secret
     serviceAccountName: appstudio-pipeline
+    stepSpecs:
+    - computeResources:
+        limits:
+          memory: 5Gi
+      name: run-tests
   taskRunTemplate:
     serviceAccountName: build-pipeline-timestamp-authority
   workspaces:
