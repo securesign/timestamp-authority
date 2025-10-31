@@ -41,6 +41,8 @@ spec:
       CGO_ENABLED=0 go build -trimpath -o bin/timestamp-cli ./cmd/timestamp-cli
       CGO_ENABLED=0 go build -trimpath -o bin/timestamp-server ./cmd/timestamp-server
       go test ./...
+  - name: fips-check
+    value: "true"
   pipelineRef:
     params:
     - name: url
