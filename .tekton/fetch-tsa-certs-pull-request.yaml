@@ -44,6 +44,14 @@ spec:
       CGO_ENABLED=0 go build -trimpath -o bin/timestamp-cli ./cmd/timestamp-cli
       CGO_ENABLED=0 go build -trimpath -o bin/timestamp-server ./cmd/timestamp-server
       go test ./...
+  - name: build-platforms
+    value:
+      - linux/x86_64
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+  - name: fips-check
+    value: "true"
   pipelineRef:
     params:
     - name: url
@@ -51,14 +59,10 @@ spec:
     - name: revision
       value: main
     - name: pathInRepo
-      value: pipelines/docker-build-oci-ta.yaml
+      value: pipelines/docker-build-multi-platform-oci-ta.yaml
     resolver: git
   taskRunSpecs:
   - pipelineTaskName: run-unit-test
-    podTemplate:
-      imagePullSecrets:
-      - name: brew-registry-pull-secret
-    serviceAccountName: build-pipeline-timestamp-authority
     stepSpecs:
     - computeResources:
         limits:

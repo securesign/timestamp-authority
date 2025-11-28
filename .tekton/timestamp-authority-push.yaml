@@ -41,6 +41,8 @@ spec:
       CGO_ENABLED=0 go build -trimpath -o bin/timestamp-cli ./cmd/timestamp-cli
       CGO_ENABLED=0 go build -trimpath -o bin/timestamp-server ./cmd/timestamp-server
       go test ./...
+  - name: fips-check
+    value: "true"
   pipelineRef:
     params:
     - name: url
@@ -52,10 +54,6 @@ spec:
     resolver: git
   taskRunSpecs:
   - pipelineTaskName: run-unit-test
-    podTemplate:
-      imagePullSecrets:
-      - name: brew-registry-pull-secret
-    serviceAccountName: build-pipeline-timestamp-authority
     stepSpecs:
     - computeResources:
         limits:
