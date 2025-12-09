@@ -24,7 +24,7 @@ import (
 
 	"github.com/sigstore/sigstore/pkg/signature"
 	"github.com/sigstore/sigstore/pkg/signature/options"
-	"github.com/sigstore/timestamp-authority/pkg/x509"
+	"github.com/sigstore/timestamp-authority/v2/pkg/x509"
 )
 
 func TestNewTimestampingCertWithChain(t *testing.T) {
@@ -62,7 +62,7 @@ func TestNewTimestampingCertWithChain(t *testing.T) {
 	}
 
 	// verify that VerifyCertChain will successfully verify the chain
-	if err := x509.VerifyCertChain(certChain, signer); err != nil {
+	if err := x509.VerifyCertChain(certChain, signer, true); err != nil {
 		t.Fatalf("failed to verify certificate chain: %v", err)
 	}
 }

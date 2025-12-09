@@ -21,6 +21,7 @@ import (
 	"errors"
 
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
+	"github.com/sigstore/sigstore/pkg/cryptoutils/goodkey"
 )
 
 var (
@@ -32,10 +33,19 @@ var (
 // VerifyCertChain verifies that the certificate chain is valid for issuing
 // timestamping certificates. The chain should start with a leaf certificate,
 // followed by any number of intermediates, and end with the root certificate.
-func VerifyCertChain(certs []*x509.Certificate, signer crypto.Signer) error {
+func VerifyCertChain(certs []*x509.Certificate, signer crypto.Signer, enforceIntermediateEku bool) error {
 	// Chain must contain at least one CA certificate and a leaf certificate
+	if len(certs) == 0 || certs[0] == nil {
+		return errors.New("certificate chain must contain a leaf certificate")
+	}
+	leaf := certs[0]
+
 	if len(certs) < 2 {
 		return errors.New("certificate chain must contain at least two certificates")
+	}
+
+	if signer == nil {
+		return errors.New("signer must not be nil")
 	}
 
 	roots := x509.NewCertPool()
@@ -56,7 +66,7 @@ func VerifyCertChain(certs []*x509.Certificate, signer crypto.Signer) error {
 			x509.ExtKeyUsageTimeStamping,
 		},
 	}
-	if _, err := certs[0].Verify(opts); err != nil {
+	if _, err := leaf.Verify(opts); err != nil {
 		return err
 	}
 
@@ -69,25 +79,26 @@ func VerifyCertChain(certs []*x509.Certificate, signer crypto.Signer) error {
 
 	// Verify leaf has only a single EKU for timestamping, per RFC 3161 2.3
 	// This should be enforced by Verify already
-	leafEKU := certs[0].ExtKeyUsage
+	leafEKU := leaf.ExtKeyUsage
 	if len(leafEKU) != 1 {
 		return errors.New("certificate should only contain one EKU")
 	}
 
 	// Verify leaf's EKU is set to critical, per RFC 3161 2.3
 	var criticalEKU bool
-	for _, ext := range certs[0].Extensions {
+	for _, ext := range leaf.Extensions {
 		if ext.Id.Equal(EKUOID) {
 			criticalEKU = ext.Critical
+			break
 		}
 	}
 	if !criticalEKU {
 		return errors.New("certificate must set EKU to critical")
 	}
 
-	// If the chain contains intermediates, verify that the extended key
-	// usage includes the extended key usage timestamping for EKU chaining
-	if len(certs) > 2 {
+	if enforceIntermediateEku && len(certs) > 2 {
+		// If the chain contains intermediates, verify that the extended key
+		// usage includes the extended key usage timestamping for EKU chaining
 		for _, c := range certs[1 : len(certs)-1] {
 			var hasExtKeyUsageTimeStamping bool
 			for _, extKeyUsage := range c.ExtKeyUsage {
@@ -103,10 +114,10 @@ func VerifyCertChain(certs []*x509.Certificate, signer crypto.Signer) error {
 	}
 
 	// Verify the signer's public key matches the leaf certificate
-	if err := cryptoutils.EqualKeys(certs[0].PublicKey, signer.Public()); err != nil {
+	if err := cryptoutils.EqualKeys(leaf.PublicKey, signer.Public()); err != nil {
 		return err
 	}
 
 	// Verify the key's strength
-	return cryptoutils.ValidatePubKey(signer.Public())
+	return goodkey.ValidatePubKey(signer.Public())
 }

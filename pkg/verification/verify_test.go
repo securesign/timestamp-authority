@@ -34,9 +34,9 @@ import (
 	"github.com/digitorus/timestamp"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
 	"github.com/sigstore/sigstore/pkg/signature"
-	"github.com/sigstore/timestamp-authority/pkg/client/mock"
-	tsatimestamp "github.com/sigstore/timestamp-authority/pkg/generated/client/timestamp"
-	"github.com/sigstore/timestamp-authority/pkg/signer"
+	"github.com/sigstore/timestamp-authority/v2/pkg/client/mock"
+	tsatimestamp "github.com/sigstore/timestamp-authority/v2/pkg/generated/client/timestamp"
+	"github.com/sigstore/timestamp-authority/v2/pkg/signer"
 )
 
 func TestVerifyArtifactHashedMessages(t *testing.T) {
@@ -92,7 +92,7 @@ func TestVerifyArtifactHashedMessages(t *testing.T) {
 		params.Request = io.NopCloser(bytes.NewReader(tsq))
 
 		var respBytes bytes.Buffer
-		_, err = c.Timestamp.GetTimestampResponse(params, &respBytes)
+		_, _, err = c.Timestamp.GetTimestampResponse(params, &respBytes)
 		if err != nil {
 			t.Fatalf("unexpected error getting timestamp response: %v", err)
 		}
@@ -629,6 +629,15 @@ func TestVerifyTSRWithChain(t *testing.T) {
 			expectVerifySuccess: true,
 		},
 		{
+			name: "Verification fails due to invalid nil root certificate",
+			ts:   tsWithCerts,
+			opts: VerifyOpts{
+				Roots:         []*x509.Certificate{nil},
+				Intermediates: []*x509.Certificate{intermediate},
+			},
+			expectVerifySuccess: false,
+		},
+		{
 			name: "Verification fails due to invalid intermediate certificate",
 			ts:   tsWithCerts,
 			opts: VerifyOpts{
@@ -681,11 +690,13 @@ func TestVerifyTSRWithChain(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		err = verifyTSRWithChain(tc.ts, tc.opts)
-		if tc.expectVerifySuccess && err != nil {
-			t.Errorf("test '%s' unexpectedly failed \nExpected verifyTSRWithChain to successfully verify certificate chain, err: %v", tc.name, err)
-		} else if !tc.expectVerifySuccess && err == nil {
-			t.Errorf("testg '%s' unexpectedly passed \nExpected verifyTSRWithChain to fail verification", tc.name)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			err = verifyTSRWithChain(tc.ts, tc.opts)
+			if tc.expectVerifySuccess && err != nil {
+				t.Errorf("unexpectedly failed \nExpected verifyTSRWithChain to successfully verify certificate chain, err: %v", err)
+			} else if !tc.expectVerifySuccess && err == nil {
+				t.Errorf("unexpectedly passed \nExpected verifyTSRWithChain to fail verification")
+			}
+		})
 	}
 }

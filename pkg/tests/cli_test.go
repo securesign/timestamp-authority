@@ -31,8 +31,8 @@ import (
 
 	ts "github.com/digitorus/timestamp"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
-	"github.com/sigstore/timestamp-authority/pkg/client"
-	"github.com/sigstore/timestamp-authority/pkg/generated/client/timestamp"
+	"github.com/sigstore/timestamp-authority/v2/pkg/client"
+	"github.com/sigstore/timestamp-authority/v2/pkg/generated/client/timestamp"
 )
 
 const (
@@ -305,7 +305,7 @@ func getTimestamp(t *testing.T, url string, artifactContent string, nonce *big.I
 	params.Request = io.NopCloser(bytes.NewReader(tsq))
 
 	var respBytes bytes.Buffer
-	_, err = c.Timestamp.GetTimestampResponse(params, &respBytes)
+	_, _, err = c.Timestamp.GetTimestampResponse(params, &respBytes)
 	if err != nil {
 		t.Fatalf("unexpected error getting timestamp chain: %v", err)
 	}

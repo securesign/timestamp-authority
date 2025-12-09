@@ -29,10 +29,10 @@ import (
 
 	ts "github.com/digitorus/timestamp"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
-	"github.com/sigstore/timestamp-authority/pkg/api"
-	"github.com/sigstore/timestamp-authority/pkg/client"
-	"github.com/sigstore/timestamp-authority/pkg/generated/client/timestamp"
-	"github.com/sigstore/timestamp-authority/pkg/x509"
+	"github.com/sigstore/timestamp-authority/v2/pkg/api"
+	"github.com/sigstore/timestamp-authority/v2/pkg/client"
+	"github.com/sigstore/timestamp-authority/v2/pkg/generated/client/timestamp"
+	"github.com/sigstore/timestamp-authority/v2/pkg/x509"
 	"github.com/spf13/viper"
 
 	"github.com/go-openapi/runtime"
@@ -76,7 +76,7 @@ func TestGetTimestampCertChain(t *testing.T) {
 	}
 
 	signer := TestSigner{pubKey: certs[0].PublicKey}
-	if err := x509.VerifyCertChain(certs, signer); err != nil {
+	if err := x509.VerifyCertChain(certs, signer, true); err != nil {
 		t.Fatalf("unexpected error verifying cert chain: %v", err)
 	}
 }
@@ -154,7 +154,7 @@ func TestGetTimestampResponse(t *testing.T) {
 		clientOption := func(op *runtime.ClientOperation) {
 			op.ConsumesMediaTypes = []string{tc.reqMediaType}
 		}
-		_, err = c.Timestamp.GetTimestampResponse(params, &respBytes, clientOption)
+		_, _, err = c.Timestamp.GetTimestampResponse(params, &respBytes, clientOption)
 		if err != nil {
 			t.Fatalf("test '%s': unexpected error getting timestamp response: %v", tc.name, err)
 		}
@@ -303,7 +303,7 @@ func TestGetTimestampResponseWithExtsAndOID(t *testing.T) {
 		clientOption := func(op *runtime.ClientOperation) {
 			op.ConsumesMediaTypes = []string{client.TimestampQueryMediaType}
 		}
-		_, err = c.Timestamp.GetTimestampResponse(params, &respBytes, clientOption)
+		_, _, err = c.Timestamp.GetTimestampResponse(params, &respBytes, clientOption)
 		if err != nil {
 			t.Fatalf("test '%s': unexpected error getting timestamp response: %v", tc.name, err)
 		}
@@ -365,7 +365,7 @@ func TestGetTimestampResponseWithNoCertificateOrNonce(t *testing.T) {
 		clientOption := func(op *runtime.ClientOperation) {
 			op.ConsumesMediaTypes = []string{tc.reqMediaType}
 		}
-		_, err = c.Timestamp.GetTimestampResponse(params, &respBytes, clientOption)
+		_, _, err = c.Timestamp.GetTimestampResponse(params, &respBytes, clientOption)
 		if err != nil {
 			t.Fatalf("test '%s': unexpected error getting timestamp response: %v", tc.name, err)
 		}
@@ -427,7 +427,7 @@ func TestUnsupportedHashAlgorithm(t *testing.T) {
 		clientOption := func(op *runtime.ClientOperation) {
 			op.ConsumesMediaTypes = []string{tc.reqMediaType}
 		}
-		_, err = c.Timestamp.GetTimestampResponse(params, &respBytes, clientOption)
+		_, _, err = c.Timestamp.GetTimestampResponse(params, &respBytes, clientOption)
 		if err == nil {
 			t.Fatalf("test '%s': expected error to occur while parsing request", tc.name)
 		}
@@ -464,7 +464,7 @@ func TestInvalidJSONArtifactHashNotBase64Encoded(t *testing.T) {
 	clientOption := func(op *runtime.ClientOperation) {
 		op.ConsumesMediaTypes = []string{client.JSONMediaType}
 	}
-	_, err = c.Timestamp.GetTimestampResponse(params, &respBytes, clientOption)
+	_, _, err = c.Timestamp.GetTimestampResponse(params, &respBytes, clientOption)
 	if err == nil {
 		t.Fatalf("expected error to occur while parsing request")
 	}

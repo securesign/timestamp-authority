@@ -28,9 +28,9 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
-	"github.com/sigstore/timestamp-authority/pkg/log"
-	"github.com/sigstore/timestamp-authority/pkg/signer"
-	tsx509 "github.com/sigstore/timestamp-authority/pkg/x509"
+	"github.com/sigstore/timestamp-authority/v2/pkg/log"
+	"github.com/sigstore/timestamp-authority/v2/pkg/signer"
+	tsx509 "github.com/sigstore/timestamp-authority/v2/pkg/x509"
 )
 
 type API struct {
@@ -39,6 +39,7 @@ type API struct {
 	certChain     []*x509.Certificate // timestamping cert chain
 	certChainPem  string              // PEM encoded timestamping cert chain
 	includeChain  bool                // Whether to include the full issuing chain or just the leaf certificate
+	useHTTP201    bool                // Whether to use HTTP 201 Created instead of HTTP 200 OK for timestamp responses
 }
 
 func NewAPI() (*API, error) {
@@ -71,7 +72,7 @@ func NewAPI() (*API, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err := tsx509.VerifyCertChain(certChain, tsaSigner); err != nil {
+		if err := tsx509.VerifyCertChain(certChain, tsaSigner, viper.GetBool("enforce-intermediate-eku")); err != nil {
 			return nil, err
 		}
 	} else {
@@ -93,6 +94,7 @@ func NewAPI() (*API, error) {
 		certChain:     certChain,
 		certChainPem:  string(certChainPEM),
 		includeChain:  viper.GetBool("include-chain-in-response"),
+		useHTTP201:    viper.GetBool("use-http-201"),
 	}, nil
 }
 
