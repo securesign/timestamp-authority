@@ -37,6 +37,8 @@ spec:
     value: "true"
   - name: prefetch-input
     value: '{"type": "gomod", "path": "."}'
+  - name: go_base_image
+    value: "registry.redhat.io/ubi9/go-toolset:9.7@sha256:75cb847263e05b395c171795d771570994019a8d9d0340ab6ef0e1b02b01bdb4"
   - name: go_unit_test
     value: "true"
   - name: go_test_command
