@@ -22,13 +22,14 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/mitchellh/mapstructure"
 
-	"github.com/sigstore/timestamp-authority/pkg/generated/models"
-	"github.com/sigstore/timestamp-authority/pkg/generated/restapi/operations/timestamp"
-	"github.com/sigstore/timestamp-authority/pkg/log"
+	"github.com/sigstore/timestamp-authority/v2/pkg/generated/models"
+	"github.com/sigstore/timestamp-authority/v2/pkg/generated/restapi/operations/timestamp"
+	"github.com/sigstore/timestamp-authority/v2/pkg/log"
 )
 
 const (
 	failedToGenerateTimestampResponse        = "Error generating timestamp response"
+	excesssivelyLongOID                      = "OID should be comprised of at most 128 components"
 	WeakHashAlgorithmTimestampRequest        = "Weak hash algorithm in timestamp request"
 	InconsistentDigestLengthTimestampRequest = "Message digest has incorrect length for specified algorithm"
 )
@@ -50,7 +51,11 @@ func handleTimestampAPIError(params interface{}, code int, err error, message st
 	handler := re.FindStringSubmatch(typeStr)[1]
 
 	logMsg := func(r *http.Request) {
-		log.RequestIDLogger(r).Errorw("exiting with error", append([]interface{}{"handler", handler, "statusCode", code, "clientMessage", message, "error", err}, fields...)...)
+		if code < http.StatusInternalServerError {
+			log.RequestIDLogger(r).Warnw(message, append([]interface{}{"handler", handler, "statusCode", code, "error", err}, fields...)...)
+		} else {
+			log.RequestIDLogger(r).Errorw(message, append([]interface{}{"handler", handler, "statusCode", code, "error", err}, fields...)...)
+		}
 		paramsFields := map[string]interface{}{}
 		if err := mapstructure.Decode(params, &paramsFields); err == nil {
 			log.RequestIDLogger(r).Debug(paramsFields)

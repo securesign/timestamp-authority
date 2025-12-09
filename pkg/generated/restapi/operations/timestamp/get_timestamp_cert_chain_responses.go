@@ -25,7 +25,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sigstore/timestamp-authority/pkg/generated/models"
+	"github.com/sigstore/timestamp-authority/v2/pkg/generated/models"
 )
 
 // GetTimestampCertChainOKCode is the HTTP code returned for type GetTimestampCertChainOK
@@ -91,7 +91,7 @@ func NewGetTimestampCertChainNotFound() *GetTimestampCertChainNotFound {
 // WriteResponse to the client
 func (o *GetTimestampCertChainNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(404)
 }
