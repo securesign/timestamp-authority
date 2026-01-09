@@ -19,7 +19,7 @@ RUN go build -mod=readonly -o fetch_tsa_certs_linux -trimpath ./cmd/fetch-tsa-ce
     gzip fetch_tsa_certs_darwin_amd64 && \
     gzip fetch_tsa_certs_windows_amd64.exe
 
-FROM registry.access.redhat.com/ubi9-minimal@sha256:7c5495d5fad59aaee12abc3cbbd2b283818ee1e814b00dbc7f25bf2d14fa4f0c
+FROM registry.access.redhat.com/ubi9-minimal@sha256:6fc28bcb6776e387d7a35a2056d9d2b985dc4e26031e98a2bd35a7137cd6fd71
 ENV APP_ROOT=/opt/app-root
 WORKDIR $APP_ROOT/src/
 
