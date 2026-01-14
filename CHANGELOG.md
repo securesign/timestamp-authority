@@ -1,3 +1,58 @@
+# v2.0.4
+
+Only contains dependency updates, but fixes #1252 due to breaking API change in sigstore/sigstore
+
+# v2.0.3
+
+## Vulnerability Fixes
+
+* https://github.com/sigstore/timestamp-authority/security/advisories/GHSA-4qg8-fj49-pxjh; prevents OOM condition due to malformed request (#1236)
+
+# v2.0.2
+
+This release bumps the Go version to 1.25.
+
+# v2.0.1
+
+This release is identical to v2.0.0, as it only contains a fix for the release pipeline.
+
+# v2.0.0
+
+v2.0.0 changes the default HTTP response code to 200 for timestamp responses,
+which matches all other well-known TSA implementations. Sigstore clients already
+handle both 200 and 201 response codes, so no changes are needed to clients.
+
+If you need backwards compatibility, you can deploy the service with
+`--use-http-201`.
+
+This release also changes the format of the binary and container signature,
+which is now a [Sigstore bundle](https://docs.sigstore.dev/about/bundle/).
+To verify a release, use the latest Cosign 3.x, verifying with
+`cosign verify-blob --bundle <artifact>-keyless.sigstore.json <artifact>`.
+
+## Features
+
+* changes default HTTP response code to 200 for timestamp responses (#1202)
+* feat: add configurable max request body size for TSA server (#1176)
+
+## Testing
+
+* test: Add a K6 loadtest
+
+## Documentation
+
+* Minor improvements to documentation (#1169)
+
+## Misc
+
+* (fix): minor gosec issues under x509.go (#1201)
+
+# v1.2.9
+
+* logging: Don't use Error when logging 4xx responses (#1159)
+* add feature to disable intermediate cert EKU enforcement (#1146)
+* add documentation for AWS KMS example (#1094)
+
 # v1.2.8
 
 ## Features

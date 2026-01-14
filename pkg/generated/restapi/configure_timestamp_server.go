@@ -33,11 +33,11 @@ import (
 	"github.com/spf13/viper"
 	"github.com/urfave/negroni"
 
-	pkgapi "github.com/sigstore/timestamp-authority/pkg/api"
-	"github.com/sigstore/timestamp-authority/pkg/generated/restapi/operations"
-	"github.com/sigstore/timestamp-authority/pkg/generated/restapi/operations/timestamp"
-	"github.com/sigstore/timestamp-authority/pkg/internal/cmdparams"
-	"github.com/sigstore/timestamp-authority/pkg/log"
+	pkgapi "github.com/sigstore/timestamp-authority/v2/pkg/api"
+	"github.com/sigstore/timestamp-authority/v2/pkg/generated/restapi/operations"
+	"github.com/sigstore/timestamp-authority/v2/pkg/generated/restapi/operations/timestamp"
+	"github.com/sigstore/timestamp-authority/v2/pkg/internal/cmdparams"
+	"github.com/sigstore/timestamp-authority/v2/pkg/log"
 )
 
 //go:generate swagger generate server --target ../../generated --name TimestampServer --spec ../../../openapi.yaml --principal interface{} --exclude-main --exclude-spec
@@ -219,7 +219,7 @@ func cacheForDay(handler http.Handler) http.Handler {
 }
 
 func logAndServeError(w http.ResponseWriter, r *http.Request, err error) {
-	if apiErr, ok := err.(errors.Error); ok && apiErr.Code() == http.StatusNotFound {
+	if apiErr, ok := err.(errors.Error); ok && apiErr.Code() < http.StatusInternalServerError {
 		log.RequestIDLogger(r).Warn(err)
 	} else {
 		log.RequestIDLogger(r).Error(err)
