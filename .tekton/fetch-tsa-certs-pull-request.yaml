@@ -58,7 +58,7 @@ spec:
     podTemplate:
       imagePullSecrets:
       - name: brew-registry-pull-secret
-    serviceAccountName: build-pipeline-timestamp-authority-v1-3
+    serviceAccountName: build-pipeline-fetch-tsa-certs-v1-3
     stepSpecs:
     - computeResources:
         limits:
