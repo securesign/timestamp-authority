@@ -7,16 +7,16 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "main" && (".tekton/fetch-tsa-certs-push.yaml".pathChanged() || "cmd/fetch-tsa-certs/***".pathChanged()
+      == "release-1.2" && (".tekton/fetch-tsa-certs-push.yaml".pathChanged() || "cmd/fetch-tsa-certs/***".pathChanged()
       || "pkg/***".pathChanged() || "Build.mak".pathChanged() || "Dockerfile.fetch_tsa_certs.rh".pathChanged()
       || "go.mod".pathChanged() || "go.sum".pathChanged() || "trigger-konflux-builds.txt".pathChanged()
       )
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: cli
-    appstudio.openshift.io/component: fetch-tsa-certs
+    appstudio.openshift.io/application: tas-tools-v1-2
+    appstudio.openshift.io/component: fetch-tsa-certs-v1-2
     pipelines.appstudio.openshift.io/type: build
-  name: fetch-tsa-certs-on-push
+  name: fetch-tsa-certs-v1-2-on-push
   namespace: rhtas-tenant
 spec:
   params:
@@ -55,9 +55,9 @@ spec:
     podTemplate:
       imagePullSecrets:
       - name: brew-registry-pull-secret
-    serviceAccountName: appstudio-pipeline
+    serviceAccountName: build-pipeline-fetch-tsa-certs-v1-2
   taskRunTemplate:
-    serviceAccountName: build-pipeline-fetch-tsa-certs
+    serviceAccountName: build-pipeline-fetch-tsa-certs-v1-2
   workspaces:
   - name: git-auth
     secret:
