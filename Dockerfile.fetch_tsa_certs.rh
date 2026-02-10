@@ -31,7 +31,7 @@ LABEL io.k8s.display-name="Fetch TSA certs container image for Red Hat Trusted S
 LABEL io.openshift.tags="fetch_tsa_certs"
 LABEL summary="Provides fetch_tsa_certs images."
 LABEL com.redhat.component="fetch_tsa_certs"
-LABEL name="fetch_tsa_certs"
+LABEL name="rhtas/fetch-tsa-certs-rhel9"
 
 COPY LICENSE /licenses/license.txt
 
