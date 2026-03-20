@@ -1,0 +1,65 @@
+FROM --platform=linux/amd64   quay.io/securesign/fetch-tsa-certs@sha256:9ad988474df1077a1b873f168684073225fa431b5b9b2b86ae6b41d427e7d81a AS build-amd64
+FROM --platform=linux/arm64   quay.io/securesign/fetch-tsa-certs@sha256:9a475b53e3dcef952d72a63042727ffed2988a59e7a58fb3f549411a5597c03f AS build-arm64
+FROM --platform=linux/ppc64le quay.io/securesign/fetch-tsa-certs@sha256:02e77e0f467b7b535e01fbf9c2827a949f6c1eabea84c583618fab06512cd52f AS build-ppc64le
+FROM --platform=linux/s390x   quay.io/securesign/fetch-tsa-certs@sha256:03e52e4c0726c8969e2cd98356884d7e0221bdbd2430014bbc8e0abb2aed541d AS build-s390x
+
+FROM registry.redhat.io/ubi9/go-toolset:9.7@sha256:799cc027d5ad58cdc156b65286eb6389993ec14c496cf748c09834b7251e78dc AS packager
+USER root
+RUN mkdir -p /binaries
+
+# Native Linux binaries from each arch variant
+COPY --from=build-amd64 /usr/local/bin/fetch_tsa_certs_linux.gz /tmp/fetch_tsa_certs_linux.gz
+RUN gzip -d /tmp/fetch_tsa_certs_linux.gz && \
+    tar -czf /binaries/fetch_tsa_certs_linux_amd64.tar.gz -C /tmp fetch_tsa_certs_linux && \
+    rm /tmp/fetch_tsa_certs_linux
+
+COPY --from=build-arm64 /usr/local/bin/fetch_tsa_certs_linux.gz /tmp/fetch_tsa_certs_linux.gz
+RUN gzip -d /tmp/fetch_tsa_certs_linux.gz && \
+    tar -czf /binaries/fetch_tsa_certs_linux_arm64.tar.gz -C /tmp fetch_tsa_certs_linux && \
+    rm /tmp/fetch_tsa_certs_linux
+
+COPY --from=build-ppc64le /usr/local/bin/fetch_tsa_certs_linux.gz /tmp/fetch_tsa_certs_linux.gz
+RUN gzip -d /tmp/fetch_tsa_certs_linux.gz && \
+    tar -czf /binaries/fetch_tsa_certs_linux_ppc64le.tar.gz -C /tmp fetch_tsa_certs_linux && \
+    rm /tmp/fetch_tsa_certs_linux
+
+COPY --from=build-s390x /usr/local/bin/fetch_tsa_certs_linux.gz /tmp/fetch_tsa_certs_linux.gz
+RUN gzip -d /tmp/fetch_tsa_certs_linux.gz && \
+    tar -czf /binaries/fetch_tsa_certs_linux_s390x.tar.gz -C /tmp fetch_tsa_certs_linux && \
+    rm /tmp/fetch_tsa_certs_linux
+
+# Darwin amd64
+COPY --from=build-amd64 /usr/local/bin/fetch_tsa_certs_darwin_amd64.gz /tmp/fetch_tsa_certs_darwin_amd64.gz
+RUN gzip -d /tmp/fetch_tsa_certs_darwin_amd64.gz && \
+    tar -czf /binaries/fetch_tsa_certs_darwin_amd64.tar.gz -C /tmp fetch_tsa_certs_darwin_amd64 && \
+    rm /tmp/fetch_tsa_certs_darwin_amd64
+
+# Darwin arm64
+COPY --from=build-amd64 /usr/local/bin/fetch_tsa_certs_darwin_arm64.gz /tmp/fetch_tsa_certs_darwin_arm64.gz
+RUN gzip -d /tmp/fetch_tsa_certs_darwin_arm64.gz && \
+    tar -czf /binaries/fetch_tsa_certs_darwin_arm64.tar.gz -C /tmp fetch_tsa_certs_darwin_arm64 && \
+    rm /tmp/fetch_tsa_certs_darwin_arm64
+
+# Windows amd64
+COPY --from=build-amd64 /usr/local/bin/fetch_tsa_certs_windows_amd64.exe.gz /tmp/fetch_tsa_certs_windows_amd64.exe.gz
+RUN gzip -d /tmp/fetch_tsa_certs_windows_amd64.exe.gz && \
+    tar -czf /binaries/fetch_tsa_certs_windows_amd64.tar.gz -C /tmp fetch_tsa_certs_windows_amd64.exe && \
+    rm /tmp/fetch_tsa_certs_windows_amd64.exe
+
+# Final minimal image with all binaries
+FROM registry.redhat.io/ubi9/ubi-minimal@sha256:69f5c9886ecb19b23e88275a5cd904c47dd982dfa370fbbd0c356d7b1047ef68
+
+LABEL description="Flat image containing fetch-tsa-certs CLI binaries for all platforms and architectures"
+LABEL io.k8s.description="Flat image containing fetch-tsa-certs CLI binaries for all platforms and architectures"
+LABEL io.opencontainers.image.description="Flat image containing fetch-tsa-certs CLI binaries for all platforms and architectures"
+LABEL io.k8s.display-name="Fetch TSA certs CLI stack image for Red Hat Trusted Artifact Signer"
+LABEL io.openshift.tags="fetch-tsa-certs trusted-artifact-signer cli-stack"
+LABEL summary="Provides all fetch-tsa-certs CLI binaries as tar.gz archives for CDN distribution."
+LABEL com.redhat.component="fetch-tsa-certs-cli-stack"
+
+COPY --from=packager /binaries/ /binaries/
+COPY --from=build-amd64 /licenses/ /licenses/
+
+RUN chown -R root:0 /binaries && chmod -R g+r /binaries
+
+USER 65532:65532
