@@ -1,7 +1,7 @@
-FROM --platform=linux/amd64   quay.io/securesign/fetch-tsa-certs@sha256:9ad988474df1077a1b873f168684073225fa431b5b9b2b86ae6b41d427e7d81a AS build-amd64
-FROM --platform=linux/arm64   quay.io/securesign/fetch-tsa-certs@sha256:9a475b53e3dcef952d72a63042727ffed2988a59e7a58fb3f549411a5597c03f AS build-arm64
-FROM --platform=linux/ppc64le quay.io/securesign/fetch-tsa-certs@sha256:02e77e0f467b7b535e01fbf9c2827a949f6c1eabea84c583618fab06512cd52f AS build-ppc64le
-FROM --platform=linux/s390x   quay.io/securesign/fetch-tsa-certs@sha256:03e52e4c0726c8969e2cd98356884d7e0221bdbd2430014bbc8e0abb2aed541d AS build-s390x
+FROM --platform=linux/amd64   quay.io/securesign/fetch-tsa-certs@sha256:5eb65ac00dea2484e0e7841730bbf11f817def819db11706ff10d3ffdb7a7f7d AS build-amd64
+FROM --platform=linux/arm64   quay.io/securesign/fetch-tsa-certs@sha256:f035d40a8a01e10d82e95a9e0a478e382a69863b909b99958b9d876f5543cd74 AS build-arm64
+FROM --platform=linux/ppc64le quay.io/securesign/fetch-tsa-certs@sha256:d669ba9fb9d8a55b00564b891c23b25676e37ec3ace30506646f0ef1a373859c AS build-ppc64le
+FROM --platform=linux/s390x   quay.io/securesign/fetch-tsa-certs@sha256:29b06919832a1953d5f57c5e257ce38e297c68e993e5a79ced8db12fd41d4af5 AS build-s390x
 
 FROM registry.redhat.io/ubi9/go-toolset:9.7@sha256:799cc027d5ad58cdc156b65286eb6389993ec14c496cf748c09834b7251e78dc AS packager
 USER root
