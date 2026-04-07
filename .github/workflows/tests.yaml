@@ -104,7 +104,6 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6.0.1
         with:
-          version: v2.1
           args: --timeout=10m --verbose
 
   gen-check:
