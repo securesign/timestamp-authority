@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.25.8@sha256:e282f9e8023cc22767b4fc0bfe53b97db8edfcc395a603691c126bb0a6160703 AS builder
+FROM golang:1.25.8@sha256:3ac2864710f25e84381bf5d4272261c7ba73ada0339d62034df4de20dabb33ca AS builder
 ENV APP_ROOT=/opt/app-root
 ENV GOPATH=$APP_ROOT
 
@@ -29,14 +29,14 @@ RUN go build -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
 RUN CGO_ENABLED=0 go build -gcflags "all=-N -l" -ldflags "${SERVER_LDFLAGS}" -o timestamp-server_debug ./cmd/timestamp-server
 
 # debug compile options & debugger
-FROM registry.redhat.io/ubi9/go-toolset:9.7-1775491036@sha256:d6b5e8c74c20bf1fa8235b4c81152dc2bd89a13f8b72977a141e4ad509b13eed as debug
+FROM registry.redhat.io/ubi9/go-toolset:9.7-1776213685@sha256:9e4500f5035d8402ad6d4e6b42bae025f82c3dff7a1f6b6f9d85209fba27fb8b as debug
 RUN go install github.com/go-delve/delve/cmd/dlv@v1.9.0
 
 # overwrite server and include debugger
 COPY --from=builder /opt/app-root/src/timestamp-server_debug /usr/local/bin/timestamp-server
 
 # Multi-Stage production build
-FROM golang:1.25.8@sha256:e282f9e8023cc22767b4fc0bfe53b97db8edfcc395a603691c126bb0a6160703 as deploy
+FROM golang:1.25.8@sha256:3ac2864710f25e84381bf5d4272261c7ba73ada0339d62034df4de20dabb33ca as deploy
 
 # Retrieve the binary from the previous stage
 COPY --from=builder /opt/app-root/src/timestamp-server /usr/local/bin/timestamp-server
