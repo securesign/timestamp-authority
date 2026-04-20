@@ -29,7 +29,7 @@ RUN go build -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
 RUN CGO_ENABLED=0 go build -gcflags "all=-N -l" -ldflags "${SERVER_LDFLAGS}" -o timestamp-server_debug ./cmd/timestamp-server
 
 # debug compile options & debugger
-FROM registry.redhat.io/ubi9/go-toolset:9.7-1776213685@sha256:9e4500f5035d8402ad6d4e6b42bae025f82c3dff7a1f6b6f9d85209fba27fb8b as debug
+FROM registry.redhat.io/ubi9/go-toolset:9.7-1776370298@sha256:59820e837f9c62f395df469d1516cb35787ad15d94d535710de95ef1ff4fd969 as debug
 RUN go install github.com/go-delve/delve/cmd/dlv@v1.9.0
 
 # overwrite server and include debugger
