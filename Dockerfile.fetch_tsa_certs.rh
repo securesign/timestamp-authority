@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/go-toolset:9.7-1777898790@sha256:59ec4752cf86f0d0dd240b9e29c64d6ee560c28fc986171e126db1db216a246a as build-env
+FROM registry.redhat.io/ubi9/go-toolset:9.7-1778054913@sha256:180d433d97773ac90384662ee0f54c3b474f6eeb7219e414a4ca323d1196bb13 as build-env
 ENV GOEXPERIMENT=strictfipsruntime
 ENV CGO_ENABLED=1
 ENV APP_ROOT=/opt/app-root
@@ -19,7 +19,7 @@ RUN go build -mod=readonly -o fetch_tsa_certs_linux -trimpath ./cmd/fetch-tsa-ce
     gzip fetch_tsa_certs_darwin_amd64 && \
     gzip fetch_tsa_certs_windows_amd64.exe
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:8d0a8fb39ec907e8ca62cdd24b62a63ca49a30fe465798a360741fde58437a23
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:b9b10f42d7eba7ad4a6d5ef26b7d34fdc892b2ffe59b8d0372ec884008569eb6
 ENV APP_ROOT=/opt/app-root
 WORKDIR $APP_ROOT/src/
 
