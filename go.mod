@@ -1,6 +1,6 @@
 module github.com/sigstore/timestamp-authority/v2
 
-go 1.26.0
+go 1.25.9
 
 require (
 	cloud.google.com/go/security v1.24.0
@@ -124,7 +124,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.1-0.20220621161143-b0104c826a24 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/letsencrypt/boulder v0.20260504.0 // indirect
+	github.com/letsencrypt/boulder v0.20260420.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/natefinch/atomic v1.0.1 // indirect
 	github.com/oklog/ulid/v2 v2.1.1 // indirect
