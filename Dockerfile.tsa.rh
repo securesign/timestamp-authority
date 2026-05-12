@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM registry.redhat.io/ubi9/go-toolset:9.7-1778054913@sha256:b282d5a2abe049e78053c5c629c321c75d0e0faa181edcfb24aa6699b2429868 AS builder
+FROM registry.redhat.io/ubi9/go-toolset:9.7-1778504036@sha256:e4dd0f18a88146bae70598884ca218ee6ffc5003f410044b7cba21d4b7461349 AS builder
 ENV GOEXPERIMENT=strictfipsruntime
 ENV CGO_ENABLED=1
 ENV APP_ROOT=/opt/app-root
@@ -29,14 +29,14 @@ RUN git config --global --add safe.directory /opt/app-root/src && \
     go build -mod=readonly -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
 
 # debug compile options & debugger
-FROM registry.redhat.io/ubi9/go-toolset:9.7-1778054913@sha256:b282d5a2abe049e78053c5c629c321c75d0e0faa181edcfb24aa6699b2429868 AS debug
+FROM registry.redhat.io/ubi9/go-toolset:9.7-1778504036@sha256:e4dd0f18a88146bae70598884ca218ee6ffc5003f410044b7cba21d4b7461349 AS debug
 RUN go install github.com/go-delve/delve/cmd/dlv@v1.9.0
 
 # overwrite server and include debugger
 COPY --from=builder /opt/app-root/src/timestamp-server_debug /usr/local/bin/timestamp-server
 
 # Multi-Stage production build
-FROM registry.access.redhat.com/ubi9-minimal@sha256:fbae396c8a47549501221dc5de79359f2c8110be9bd611d4883518ee14f85d2c AS deploy
+FROM registry.access.redhat.com/ubi9-minimal@sha256:77bad043ffe39eb92b2346e935fa3023e3d072e93de21562f33847e42f3612e4 AS deploy
 
 LABEL description="The timestamp-authority is a process that provides a timestamp record of when a document was created or modified."
 LABEL io.k8s.description="The timestamp-authority is a process that provides a timestamp record of when a document was created or modified."
