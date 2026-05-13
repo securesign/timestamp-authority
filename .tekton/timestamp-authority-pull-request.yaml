@@ -16,7 +16,7 @@ metadata:
     appstudio.openshift.io/application: tas-components-v1-4
     appstudio.openshift.io/component: timestamp-authority-v1-4
     pipelines.appstudio.openshift.io/type: build
-  name: timestamp-authority-on-pull-request
+  name: timestamp-authority-v1-4-on-pull-request
   namespace: rhtas-tenant
 spec:
   params:
