@@ -62,7 +62,7 @@ func GetPrimaryKey(ctx context.Context, kmsKey, hcVaultToken string) (tink.AEAD,
 		registry.RegisterKMSClient(gcpClient)
 		return gcpClient.GetAEAD(kmsKey)
 	case strings.HasPrefix(kmsKey, "aws-kms://"):
-		awsClient, err := awskms.NewClientWithOptions(kmsKey)
+		awsClient, err := awskms.NewClientWithOptions(ctx, kmsKey)
 		if err != nil {
 			return nil, err
 		}
