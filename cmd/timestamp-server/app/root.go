@@ -18,8 +18,9 @@ package app
 import (
 	"fmt"
 	"os"
+	"time"
 
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5/middleware"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/sigstore/timestamp-authority/v2/pkg/log"
 	"github.com/spf13/cobra"
@@ -83,6 +84,11 @@ func init() {
 
 	rootCmd.PersistentFlags().String("http-request-id-header-name", middleware.RequestIDHeader, "name of HTTP Request Header to use as request correlation ID")
 	rootCmd.PersistentFlags().Uint64("max-request-body-size", 1048576, "Maximum allowed size for request bodies in bytes (1MB by default)")
+	rootCmd.PersistentFlags().Duration("cleanup-timeout", 620*time.Second, "grace period for which to wait before killing idle connections")
+
+	rootCmd.PersistentFlags().String("default-policy-oid", "1.3.6.1.4.1.57264.2", "Default policy OID to use if none is specified in the request")
+	rootCmd.PersistentFlags().StringSlice("accepted-policy-oids", []string{"1.3.6.1.4.1.57264.2"}, "List of policy OIDs accepted in timestamp requests")
+	rootCmd.PersistentFlags().Bool("allow-custom-extensions", false, "Whether to allow and copy custom request extensions into the signed timestamp")
 
 	if err := viper.BindPFlags(rootCmd.PersistentFlags()); err != nil {
 		log.Logger.Fatal(err)
