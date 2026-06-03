@@ -3,7 +3,7 @@ FROM --platform=linux/arm64   quay.io/securesign/fetch-tsa-certs@sha256:784bf629
 FROM --platform=linux/ppc64le quay.io/securesign/fetch-tsa-certs@sha256:ad659c674d7bfe8a59fc733b4656564b0bb5c35916abce274eb22d80111c86ba AS build-ppc64le
 FROM --platform=linux/s390x   quay.io/securesign/fetch-tsa-certs@sha256:81fecc40486c85cd3d42802b533ce625feb6ed704f63cea7de41c8eb974cb6d9 AS build-s390x
 
-FROM registry.redhat.io/ubi9/go-toolset:9.7-1774618347@sha256:0f4f6f7868962aa75dddfe4230b664bdf77071e92c43c70c824c58450e37693f AS packager
+FROM registry.redhat.io/ubi9/go-toolset:9.8-1780490420@sha256:d36470d5258da00f618b7aca9bdaab8e05134aa938bd6c42d9bd17d50ed45e76 AS packager
 USER root
 RUN mkdir -p /binaries
 
@@ -47,7 +47,7 @@ RUN gzip -d /tmp/fetch_tsa_certs_windows_amd64.exe.gz && \
     rm /tmp/fetch_tsa_certs_windows_amd64.exe
 
 # Final minimal image with all binaries
-FROM registry.redhat.io/ubi9/ubi-minimal@sha256:83006d535923fcf1345067873524a3980316f51794f01d8655be55d6e9387183
+FROM registry.redhat.io/ubi9/ubi-minimal@sha256:ae09ecc3d754bc1726cbda3e2599cc7839e09fe1cc547ce173cf669b645be3cc
 
 LABEL description="Flat image containing fetch-tsa-certs CLI binaries for all platforms and architectures"
 LABEL io.k8s.description="Flat image containing fetch-tsa-certs CLI binaries for all platforms and architectures"
