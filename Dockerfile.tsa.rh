@@ -1,0 +1,56 @@
+# Copyright 2022 The Sigstore Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+FROM registry.redhat.io/ubi9/go-toolset:9.7-1774618347@sha256:a05a1c82b3ce23864a831084ff21a907128f4707ca3f455ba99717c0c2c4d6c1 AS builder
+ENV GOEXPERIMENT=strictfipsruntime
+ENV CGO_ENABLED=1
+ENV APP_ROOT=/opt/app-root
+ENV GOPATH=$APP_ROOT
+
+WORKDIR $APP_ROOT/src/
+
+ADD go.mod go.sum $APP_ROOT/src/
+ADD ./cmd/ $APP_ROOT/src/cmd/
+ADD ./pkg/ $APP_ROOT/src/pkg/
+
+RUN git config --global --add safe.directory /opt/app-root/src && \
+    go mod download && \
+    go build -mod=readonly -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
+
+# debug compile options & debugger
+FROM registry.redhat.io/ubi9/go-toolset:9.7-1774618347@sha256:a05a1c82b3ce23864a831084ff21a907128f4707ca3f455ba99717c0c2c4d6c1 AS debug
+RUN go install github.com/go-delve/delve/cmd/dlv@v1.9.0
+
+# overwrite server and include debugger
+COPY --from=builder /opt/app-root/src/timestamp-server_debug /usr/local/bin/timestamp-server
+
+# Multi-Stage production build
+FROM registry.access.redhat.com/ubi9-minimal@sha256:f5346fbb587b72b5376e66272935d22c62af78be2e8ea1dcf3e9e46865a9a2ee AS deploy
+
+LABEL description="The timestamp-authority is a process that provides a timestamp record of when a document was created or modified."
+LABEL io.k8s.description="The timestamp-authority is a process that provides a timestamp record of when a document was created or modified."
+LABEL io.k8s.display-name="Timestamp-authority container image for Red Hat Trusted Signer."
+LABEL io.openshift.tags="TSA trusted-signer."
+LABEL summary="Provides a timestamp-authority image."
+LABEL com.redhat.component="timestamp-authority"
+LABEL name="rhtas/timestamp-authority-rhel9"
+
+# Retrieve the binary from the previous stage
+COPY --from=builder /opt/app-root/src/timestamp-server /usr/local/bin/timestamp-server
+COPY LICENSE /licenses/license.txt
+
+USER 65532:65532
+
+# Set the binary as the entrypoint of the container
+CMD ["timestamp-server", "serve"]
