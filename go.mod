@@ -1,6 +1,8 @@
 module github.com/sigstore/timestamp-authority/v2
 
-go 1.25.7
+go 1.26
+
+godebug fips140=auto
 
 require (
 	cloud.google.com/go/security v1.25.0
