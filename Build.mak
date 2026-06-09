@@ -1,8 +1,8 @@
 FIPS_MODULE ?= latest
 
 .PHONY: fetch-tsa-certs-linux
-fetch-tsa-certs-linux: ## Build native Linux binary (FIPS, CGO)
-	env CGO_ENABLED=1 GOEXPERIMENT=strictfipsruntime go build -mod=readonly -buildvcs=false -o fetch_tsa_certs -trimpath ./cmd/fetch-tsa-certs
+fetch-tsa-certs-linux: ## Build native Linux binary (FIPS)
+	env CGO_ENABLED=0 GOFIPS140=v1.0.0 go build -mod=readonly -tags=no_openssl -buildvcs=false -o fetch_tsa_certs -trimpath ./cmd/fetch-tsa-certs
 
 .PHONY:
 cross-platform: fetch-tsa-certs-darwin-arm64 fetch-tsa-certs-darwin-amd64 fetch-tsa-certs-windows ## Build all distributable (cross-platform) binaries

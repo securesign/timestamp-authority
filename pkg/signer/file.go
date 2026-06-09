@@ -18,7 +18,9 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/ed25519"
+	"crypto/fips140"
 	"crypto/rsa"
+	"encoding/pem"
 	"fmt"
 	"os"
 
@@ -36,6 +38,15 @@ func NewFileSigner(keyPath, keyPass string, hash crypto.Hash) (*File, error) {
 	if err != nil {
 		return nil, fmt.Errorf("file: reading key path %s: %w", keyPath, err)
 	}
+	// RHTAS FIPS - DO NOT REMOVE
+	// ========================================
+	if fips140.Enabled() {
+		block, _ := pem.Decode(pemBytes)
+		if block != nil && (block.Type == "ENCRYPTED SIGSTORE PRIVATE KEY" || block.Type == "ENCRYPTED COSIGN PRIVATE KEY") {
+			return nil, fmt.Errorf("sigstore-encrypted private keys are not supported in FIPS mode: decryption uses non-FIPS algorithms")
+		}
+	}
+	// ========================================
 	opaqueKey, err := cryptoutils.UnmarshalPEMToPrivateKey(pemBytes, cryptoutils.StaticPasswordFunc([]byte(keyPass)))
 	if err != nil {
 		return nil, fmt.Errorf("file: provide a valid signer, %s is not valid: %w", keyPath, err)
@@ -55,6 +66,12 @@ func NewFileSigner(keyPath, keyPass string, hash crypto.Hash) (*File, error) {
 		}
 		return &File{signer}, nil
 	case ed25519.PrivateKey:
+		// RHTAS FIPS - DO NOT REMOVE
+		// ========================================
+		if fips140.Enabled() {
+			return nil, fmt.Errorf("ed25519 is not supported in FIPS mode")
+		}
+		// ========================================
 		signer, err := signature.LoadED25519SignerVerifier(pk)
 		if err != nil {
 			return nil, err
