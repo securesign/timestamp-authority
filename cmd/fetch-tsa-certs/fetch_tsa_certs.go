@@ -18,6 +18,8 @@ package main
 import (
 	"context"
 	"crypto"
+	"crypto/ed25519"
+	"crypto/fips140"
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -108,6 +110,12 @@ func fetchCertificateChain(ctx context.Context, root, parentKMSKey, leafKMSKey, 
 	if err != nil {
 		return nil, err
 	}
+	// RHTAS FIPS - DO NOT REMOVE
+	// ========================================
+	if _, ok := parentSigner.Public().(ed25519.PublicKey); ok && fips140.Enabled() {
+		return nil, fmt.Errorf("ed25519 is not supported in FIPS mode")
+	}
+	// ========================================
 	parentPubKey := parentSigner.Public()
 	parentPEMPubKey, err := cryptoutils.MarshalPublicKeyToPEM(parentPubKey)
 	if err != nil {
@@ -240,6 +248,12 @@ func fetchCertificateChain(ctx context.Context, root, parentKMSKey, leafKMSKey, 
 		if err != nil {
 			return nil, err
 		}
+		// RHTAS FIPS - DO NOT REMOVE
+		// ========================================
+		if _, ok := leafKMSSigner.Public().(ed25519.PublicKey); ok && fips140.Enabled() {
+			return nil, fmt.Errorf("ed25519 is not supported in FIPS mode")
+		}
+		// ========================================
 	} else {
 		primaryKey, err := signer.GetPrimaryKey(ctx, tinkKmsKey, "")
 		if err != nil {
@@ -259,6 +273,12 @@ func fetchCertificateChain(ctx context.Context, root, parentKMSKey, leafKMSKey, 
 		if err != nil {
 			return nil, err
 		}
+		// RHTAS FIPS - DO NOT REMOVE
+		// ========================================
+		if _, ok := leafKMSSigner.Public().(ed25519.PublicKey); ok && fips140.Enabled() {
+			return nil, fmt.Errorf("ed25519 is not supported in FIPS mode")
+		}
+		// ========================================
 	}
 
 	leafPubKey := leafKMSSigner.Public()
