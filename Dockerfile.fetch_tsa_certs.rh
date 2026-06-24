@@ -12,12 +12,7 @@ ADD ./cmd/ $APP_ROOT/src/cmd/
 ADD ./pkg/ $APP_ROOT/src/pkg/
 ADD ./Build.mak $APP_ROOT/src/Build.mak
 
-RUN go build -mod=readonly -o fetch_tsa_certs_linux -trimpath ./cmd/fetch-tsa-certs && \
-    gzip -k fetch_tsa_certs_linux && \
-    make -f Build.mak cross-platform && \
-    gzip fetch_tsa_certs_darwin_arm64 && \
-    gzip fetch_tsa_certs_darwin_amd64 && \
-    gzip fetch_tsa_certs_windows_amd64.exe
+RUN make -f Build.mak fetch-tsa-certs-linux
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:5b74fce9d6e629942a0c6dc0f546c193e70d7f974d999a48c948c53dd3d36362
 ENV APP_ROOT=/opt/app-root
@@ -33,14 +28,8 @@ LABEL name="rhtas/fetch-tsa-certs-rhel9"
 
 COPY LICENSE /licenses/license.txt
 
-COPY --from=build-env $APP_ROOT/src/fetch_tsa_certs_linux /usr/local/bin/fetch_tsa_certs_linux
-COPY --from=build-env $APP_ROOT/src/fetch_tsa_certs_linux.gz /usr/local/bin/fetch_tsa_certs_linux.gz
-COPY --from=build-env $APP_ROOT/src/fetch_tsa_certs_darwin_arm64.gz /usr/local/bin/fetch_tsa_certs_darwin_arm64.gz
-COPY --from=build-env $APP_ROOT/src/fetch_tsa_certs_darwin_amd64.gz /usr/local/bin/fetch_tsa_certs_darwin_amd64.gz
-COPY --from=build-env $APP_ROOT/src/fetch_tsa_certs_windows_amd64.exe.gz /usr/local/bin/fetch_tsa_certs_windows_amd64.exe.gz
+COPY --from=build-env $APP_ROOT/src/fetch_tsa_certs /usr/local/bin/fetch_tsa_certs
 
-RUN chown root:0 /usr/local/bin/fetch_tsa_certs_linux.gz && chmod g+wx /usr/local/bin/fetch_tsa_certs_linux.gz && \
-    chown root:0 /usr/local/bin/fetch_tsa_certs_darwin_arm64.gz && chmod g+wx /usr/local/bin/fetch_tsa_certs_darwin_arm64.gz && \
-    chown root:0 /usr/local/bin/fetch_tsa_certs_darwin_amd64.gz && chmod g+wx /usr/local/bin/fetch_tsa_certs_darwin_amd64.gz && \
-    chown root:0 /usr/local/bin/fetch_tsa_certs_windows_amd64.exe.gz && chmod g+wx /usr/local/bin/fetch_tsa_certs_windows_amd64.exe.gz && \
-    chgrp -R 0 /${HOME} && chmod -R g=u /${HOME}
+USER 65532:65532
+
+ENTRYPOINT ["fetch_tsa_certs"]
