@@ -18,6 +18,7 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
+	"crypto/fips140"
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -105,10 +106,18 @@ func NewTimestampingCertWithChain(signer crypto.Signer) ([]*x509.Certificate, er
 		return nil, err
 	}
 
-	skid, err := cryptoutils.SKID(signer.Public())
+	// RHTAS FIPS - DO NOT REMOVE
+	// ========================================
+	var skid []byte
+	if fips140.Enabled() {
+		skid, err = tsx509.ComputeSKID(signer.Public())
+	} else {
+		skid, err = cryptoutils.SKID(signer.Public())
+	}
 	if err != nil {
 		return nil, err
 	}
+	// ========================================
 
 	cert := &x509.Certificate{
 		SerialNumber: sn,
