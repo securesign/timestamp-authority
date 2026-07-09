@@ -15,8 +15,11 @@ LABEL name="rhtas/fetch-tsa-certs-rhel9"
 
 COPY --from=cli-stack /licenses/license.txt /licenses/license.txt
 COPY --from=cli-stack /binaries/ /tmp/binaries/
-RUN tar -xzf /tmp/binaries/fetch_tsa_certs_linux_${TARGETARCH}.tar.gz -C /usr/local/bin/ && \
-    rm -rf /tmp/binaries
+RUN microdnf install -y tar gzip && \
+    tar -xzf /tmp/binaries/fetch_tsa_certs_linux_${TARGETARCH}.tar.gz -C /usr/local/bin/ && \
+    rm -rf /tmp/binaries && \
+    microdnf remove -y tar gzip && \
+    microdnf clean all
 
 USER 65532:65532
 
