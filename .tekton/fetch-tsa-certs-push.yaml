@@ -48,8 +48,6 @@ spec:
     value: "appstudio.openshift.io/application=cli-stacks,appstudio.openshift.io/component=fetch-tsa-certs-cli-stack,pipelinesascode.tekton.dev/sha={{revision}},pipelinesascode.tekton.dev/event-type in (push,incoming,retest-all-comment)"
   - name: manager-registry-url
     value: "quay.io/securesign/fetch-tsa-certs-cli-stack"
-  - name: manager-build-arg-name
-    value: "CLI_STACK_REF"
   pipelineRef:
     params:
     - name: url
