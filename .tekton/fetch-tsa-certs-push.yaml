@@ -49,7 +49,7 @@ spec:
   - name: manager-registry-url
     value: "quay.io/securesign/fetch-tsa-certs-cli-stack"
   - name: manager-build-arg-name
-    value: "CLI_STACK_IMAGE"
+    value: "CLI_STACK_REF"
   pipelineRef:
     params:
     - name: url
