@@ -1,9 +1,13 @@
 ARG CLI_STACK_IMAGE=quay.io/securesign/fetch-tsa-certs-cli-stack:latest
 FROM --platform=linux/amd64 ${CLI_STACK_IMAGE} AS cli-stack
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:83006d535923fcf1345067873524a3980316f51794f01d8655be55d6e9387183
-
+FROM registry.redhat.io/ubi9/go-toolset:9.8@sha256:355b23fe885cf565c9313a7e98db742df0aec21456244e808942c56489594251 AS extractor
 ARG TARGETARCH
+COPY --from=cli-stack /binaries/ /tmp/binaries/
+RUN tar -xzf /tmp/binaries/fetch_tsa_certs_linux_${TARGETARCH}.tar.gz -C /tmp/ && \
+    rm -rf /tmp/binaries
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:83006d535923fcf1345067873524a3980316f51794f01d8655be55d6e9387183
 
 LABEL description="The fetch_tsa_certs binary is a cli used to configure the kms and tink signer types for Timestamp Authority."
 LABEL io.k8s.description="The fetch_tsa_certs binary is a cli used to configure the kms and tink signer types for Timestamp Authority."
@@ -14,12 +18,7 @@ LABEL com.redhat.component="fetch_tsa_certs"
 LABEL name="rhtas/fetch-tsa-certs-rhel9"
 
 COPY --from=cli-stack /licenses/license.txt /licenses/license.txt
-COPY --from=cli-stack /binaries/ /tmp/binaries/
-RUN microdnf install -y tar gzip && \
-    tar -xzf /tmp/binaries/fetch_tsa_certs_linux_${TARGETARCH}.tar.gz -C /usr/local/bin/ && \
-    rm -rf /tmp/binaries && \
-    microdnf remove -y tar gzip && \
-    microdnf clean all
+COPY --from=extractor /tmp/fetch_tsa_certs /usr/local/bin/fetch_tsa_certs
 
 USER 65532:65532
 
