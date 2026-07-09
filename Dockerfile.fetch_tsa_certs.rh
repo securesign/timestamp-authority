@@ -1,22 +1,9 @@
-FROM registry.redhat.io/ubi9/go-toolset:9.8@sha256:355b23fe885cf565c9313a7e98db742df0aec21456244e808942c56489594251 as build-env
-ENV APP_ROOT=/opt/app-root
-ENV GOPATH=$APP_ROOT
-ENV CGO_ENABLED=0
-ENV GOFIPS140=v1.0.0
-WORKDIR $APP_ROOT/src/
-
-ADD go.mod go.sum $APP_ROOT/src/
-RUN go mod download
-
-ADD ./cmd/ $APP_ROOT/src/cmd/
-ADD ./pkg/ $APP_ROOT/src/pkg/
-ADD ./Build.mak $APP_ROOT/src/Build.mak
-
-RUN make -f Build.mak fetch-tsa-certs-linux
+ARG CLI_STACK_IMAGE=quay.io/securesign/fetch-tsa-certs-cli-stack:latest
+FROM --platform=linux/amd64 ${CLI_STACK_IMAGE} AS cli-stack
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:83006d535923fcf1345067873524a3980316f51794f01d8655be55d6e9387183
-ENV APP_ROOT=/opt/app-root
-WORKDIR $APP_ROOT/src/
+
+ARG TARGETARCH
 
 LABEL description="The fetch_tsa_certs binary is a cli used to configure the kms and tink signer types for Timestamp Authority."
 LABEL io.k8s.description="The fetch_tsa_certs binary is a cli used to configure the kms and tink signer types for Timestamp Authority."
@@ -26,9 +13,10 @@ LABEL summary="Provides fetch_tsa_certs images."
 LABEL com.redhat.component="fetch_tsa_certs"
 LABEL name="rhtas/fetch-tsa-certs-rhel9"
 
-COPY LICENSE /licenses/license.txt
-
-COPY --from=build-env $APP_ROOT/src/fetch_tsa_certs /usr/local/bin/fetch_tsa_certs
+COPY --from=cli-stack /licenses/license.txt /licenses/license.txt
+COPY --from=cli-stack /binaries/ /tmp/binaries/
+RUN tar -xzf /tmp/binaries/fetch_tsa_certs_linux_${TARGETARCH}.tar.gz -C /usr/local/bin/ && \
+    rm -rf /tmp/binaries
 
 USER 65532:65532
 
