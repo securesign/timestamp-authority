@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/go-toolset:9.8@sha256:355b23fe885cf565c9313a7e98db742df0aec21456244e808942c56489594251 AS build-cross-platform
+FROM registry.redhat.io/ubi9/go-toolset:9.8@sha256:355b23fe885cf565c9313a7e98db742df0aec21456244e808942c56489594251 AS build-all-platforms
 ENV APP_ROOT=/opt/app-root \
     GOPATH=/opt/app-root
 
@@ -7,46 +7,38 @@ WORKDIR $APP_ROOT/src
 ADD go.mod go.sum ./
 ADD ./ ./
 
-RUN git config --global --add safe.directory /opt/app-root/src && \
-    go mod download && \
-    make -f Build.mak cross-platform
-
-FROM --platform=linux/amd64   quay.io/securesign/fetch-tsa-certs@sha256:83b5762cd5c7a041727da61038215960dbb828fd93979140be1216f45e185253 AS build-amd64
-FROM --platform=linux/arm64   quay.io/securesign/fetch-tsa-certs@sha256:83b5762cd5c7a041727da61038215960dbb828fd93979140be1216f45e185253 AS build-arm64
-FROM --platform=linux/ppc64le quay.io/securesign/fetch-tsa-certs@sha256:83b5762cd5c7a041727da61038215960dbb828fd93979140be1216f45e185253 AS build-ppc64le
-FROM --platform=linux/s390x   quay.io/securesign/fetch-tsa-certs@sha256:83b5762cd5c7a041727da61038215960dbb828fd93979140be1216f45e185253 AS build-s390x
+RUN go mod download && \
+    make -f Build.mak all-platforms
 
 FROM registry.redhat.io/ubi9/go-toolset:9.8@sha256:355b23fe885cf565c9313a7e98db742df0aec21456244e808942c56489594251 AS packager
 USER root
 RUN mkdir -p /binaries
 
-# fetch_tsa_certs: Native Linux binaries from each arch variant
-COPY --from=build-amd64 /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
+COPY --from=build-all-platforms /opt/app-root/src/fetch_tsa_certs_linux_amd64 /tmp/fetch_tsa_certs
 RUN tar -czf /binaries/fetch_tsa_certs_linux_amd64.tar.gz -C /tmp fetch_tsa_certs && \
     rm /tmp/fetch_tsa_certs
 
-COPY --from=build-arm64 /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
+COPY --from=build-all-platforms /opt/app-root/src/fetch_tsa_certs_linux_arm64 /tmp/fetch_tsa_certs
 RUN tar -czf /binaries/fetch_tsa_certs_linux_arm64.tar.gz -C /tmp fetch_tsa_certs && \
     rm /tmp/fetch_tsa_certs
 
-COPY --from=build-ppc64le /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
+COPY --from=build-all-platforms /opt/app-root/src/fetch_tsa_certs_linux_ppc64le /tmp/fetch_tsa_certs
 RUN tar -czf /binaries/fetch_tsa_certs_linux_ppc64le.tar.gz -C /tmp fetch_tsa_certs && \
     rm /tmp/fetch_tsa_certs
 
-COPY --from=build-s390x /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
+COPY --from=build-all-platforms /opt/app-root/src/fetch_tsa_certs_linux_s390x /tmp/fetch_tsa_certs
 RUN tar -czf /binaries/fetch_tsa_certs_linux_s390x.tar.gz -C /tmp fetch_tsa_certs && \
     rm /tmp/fetch_tsa_certs
 
-# fetch_tsa_certs: Cross-compiled binaries
-COPY --from=build-cross-platform /opt/app-root/src/fetch_tsa_certs_darwin_amd64 /tmp/fetch_tsa_certs_darwin_amd64
+COPY --from=build-all-platforms /opt/app-root/src/fetch_tsa_certs_darwin_amd64 /tmp/fetch_tsa_certs_darwin_amd64
 RUN tar -czf /binaries/fetch_tsa_certs_darwin_amd64.tar.gz -C /tmp fetch_tsa_certs_darwin_amd64 && \
     rm /tmp/fetch_tsa_certs_darwin_amd64
 
-COPY --from=build-cross-platform /opt/app-root/src/fetch_tsa_certs_darwin_arm64 /tmp/fetch_tsa_certs_darwin_arm64
+COPY --from=build-all-platforms /opt/app-root/src/fetch_tsa_certs_darwin_arm64 /tmp/fetch_tsa_certs_darwin_arm64
 RUN tar -czf /binaries/fetch_tsa_certs_darwin_arm64.tar.gz -C /tmp fetch_tsa_certs_darwin_arm64 && \
     rm /tmp/fetch_tsa_certs_darwin_arm64
 
-COPY --from=build-cross-platform /opt/app-root/src/fetch_tsa_certs_windows_amd64.exe /tmp/fetch_tsa_certs_windows_amd64.exe
+COPY --from=build-all-platforms /opt/app-root/src/fetch_tsa_certs_windows_amd64.exe /tmp/fetch_tsa_certs_windows_amd64.exe
 RUN tar -czf /binaries/fetch_tsa_certs_windows_amd64.tar.gz -C /tmp fetch_tsa_certs_windows_amd64.exe && \
     rm /tmp/fetch_tsa_certs_windows_amd64.exe
 
@@ -65,6 +57,6 @@ LABEL com.redhat.component="fetch-tsa-certs-cli-stack"
 LABEL name="rhtas/fetch-tsa-certs-cli-stack"
 
 COPY --from=packager /binaries/ /binaries/
-COPY --from=build-amd64 /licenses/ /licenses/
+COPY --from=build-all-platforms /opt/app-root/src/LICENSE /licenses/license.txt
 
 USER 65532:65532
