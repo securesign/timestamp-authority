@@ -18,6 +18,8 @@ package main
 import (
 	"context"
 	"crypto"
+	"crypto/ed25519"
+	"crypto/fips140"
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -108,6 +110,12 @@ func fetchCertificateChain(ctx context.Context, root, parentKMSKey, leafKMSKey, 
 	if err != nil {
 		return nil, err
 	}
+	// RHTAS FIPS - DO NOT REMOVE
+	// ========================================
+	if _, ok := parentSigner.Public().(ed25519.PublicKey); ok && fips140.Enabled() {
+		return nil, fmt.Errorf("ed25519 is not supported in FIPS mode")
+	}
+	// ========================================
 	parentPubKey := parentSigner.Public()
 	parentPEMPubKey, err := cryptoutils.MarshalPublicKeyToPEM(parentPubKey)
 	if err != nil {
@@ -134,10 +142,18 @@ func fetchCertificateChain(ctx context.Context, root, parentKMSKey, leafKMSKey, 
 			return nil, fmt.Errorf("generating serial number: %w", err)
 		}
 
-		parentSkid, err := cryptoutils.SKID(parentPubKey)
+		// RHTAS FIPS - DO NOT REMOVE
+		// ========================================
+		var parentSkid []byte
+		if fips140.Enabled() {
+			parentSkid, err = tsx509.ComputeSKID(parentPubKey)
+		} else {
+			parentSkid, err = cryptoutils.SKID(parentPubKey)
+		}
 		if err != nil {
 			return nil, fmt.Errorf("generating SKID hash: %w", err)
 		}
+		// ========================================
 		now := time.Now()
 		cert := &x509.Certificate{
 			SerialNumber: parentSn,
@@ -240,6 +256,12 @@ func fetchCertificateChain(ctx context.Context, root, parentKMSKey, leafKMSKey, 
 		if err != nil {
 			return nil, err
 		}
+		// RHTAS FIPS - DO NOT REMOVE
+		// ========================================
+		if _, ok := leafKMSSigner.Public().(ed25519.PublicKey); ok && fips140.Enabled() {
+			return nil, fmt.Errorf("ed25519 is not supported in FIPS mode")
+		}
+		// ========================================
 	} else {
 		primaryKey, err := signer.GetPrimaryKey(ctx, tinkKmsKey, "")
 		if err != nil {
@@ -259,6 +281,12 @@ func fetchCertificateChain(ctx context.Context, root, parentKMSKey, leafKMSKey, 
 		if err != nil {
 			return nil, err
 		}
+		// RHTAS FIPS - DO NOT REMOVE
+		// ========================================
+		if _, ok := leafKMSSigner.Public().(ed25519.PublicKey); ok && fips140.Enabled() {
+			return nil, fmt.Errorf("ed25519 is not supported in FIPS mode")
+		}
+		// ========================================
 	}
 
 	leafPubKey := leafKMSSigner.Public()
@@ -268,10 +296,18 @@ func fetchCertificateChain(ctx context.Context, root, parentKMSKey, leafKMSKey, 
 		return nil, fmt.Errorf("generating serial number: %w", err)
 	}
 
-	skid, err := cryptoutils.SKID(leafPubKey)
+	// RHTAS FIPS - DO NOT REMOVE
+	// ========================================
+	var skid []byte
+	if fips140.Enabled() {
+		skid, err = tsx509.ComputeSKID(leafPubKey)
+	} else {
+		skid, err = cryptoutils.SKID(leafPubKey)
+	}
 	if err != nil {
 		return nil, err
 	}
+	// ========================================
 
 	cert := &x509.Certificate{
 		SerialNumber: sn,

@@ -1,0 +1,70 @@
+FROM registry.redhat.io/ubi9/go-toolset:9.8@sha256:355b23fe885cf565c9313a7e98db742df0aec21456244e808942c56489594251 AS build-cross-platform
+ENV APP_ROOT=/opt/app-root \
+    GOPATH=/opt/app-root
+
+USER root
+WORKDIR $APP_ROOT/src
+ADD go.mod go.sum ./
+ADD ./ ./
+
+RUN git config --global --add safe.directory /opt/app-root/src && \
+    go mod download && \
+    make -f Build.mak cross-platform
+
+FROM --platform=linux/amd64   quay.io/securesign/fetch-tsa-certs@sha256:83b5762cd5c7a041727da61038215960dbb828fd93979140be1216f45e185253 AS build-amd64
+FROM --platform=linux/arm64   quay.io/securesign/fetch-tsa-certs@sha256:83b5762cd5c7a041727da61038215960dbb828fd93979140be1216f45e185253 AS build-arm64
+FROM --platform=linux/ppc64le quay.io/securesign/fetch-tsa-certs@sha256:83b5762cd5c7a041727da61038215960dbb828fd93979140be1216f45e185253 AS build-ppc64le
+FROM --platform=linux/s390x   quay.io/securesign/fetch-tsa-certs@sha256:83b5762cd5c7a041727da61038215960dbb828fd93979140be1216f45e185253 AS build-s390x
+
+FROM registry.redhat.io/ubi9/go-toolset:9.8@sha256:355b23fe885cf565c9313a7e98db742df0aec21456244e808942c56489594251 AS packager
+USER root
+RUN mkdir -p /binaries
+
+# fetch_tsa_certs: Native Linux binaries from each arch variant
+COPY --from=build-amd64 /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
+RUN tar -czf /binaries/fetch_tsa_certs_linux_amd64.tar.gz -C /tmp fetch_tsa_certs && \
+    rm /tmp/fetch_tsa_certs
+
+COPY --from=build-arm64 /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
+RUN tar -czf /binaries/fetch_tsa_certs_linux_arm64.tar.gz -C /tmp fetch_tsa_certs && \
+    rm /tmp/fetch_tsa_certs
+
+COPY --from=build-ppc64le /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
+RUN tar -czf /binaries/fetch_tsa_certs_linux_ppc64le.tar.gz -C /tmp fetch_tsa_certs && \
+    rm /tmp/fetch_tsa_certs
+
+COPY --from=build-s390x /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
+RUN tar -czf /binaries/fetch_tsa_certs_linux_s390x.tar.gz -C /tmp fetch_tsa_certs && \
+    rm /tmp/fetch_tsa_certs
+
+# fetch_tsa_certs: Cross-compiled binaries
+COPY --from=build-cross-platform /opt/app-root/src/fetch_tsa_certs_darwin_amd64 /tmp/fetch_tsa_certs_darwin_amd64
+RUN tar -czf /binaries/fetch_tsa_certs_darwin_amd64.tar.gz -C /tmp fetch_tsa_certs_darwin_amd64 && \
+    rm /tmp/fetch_tsa_certs_darwin_amd64
+
+COPY --from=build-cross-platform /opt/app-root/src/fetch_tsa_certs_darwin_arm64 /tmp/fetch_tsa_certs_darwin_arm64
+RUN tar -czf /binaries/fetch_tsa_certs_darwin_arm64.tar.gz -C /tmp fetch_tsa_certs_darwin_arm64 && \
+    rm /tmp/fetch_tsa_certs_darwin_arm64
+
+COPY --from=build-cross-platform /opt/app-root/src/fetch_tsa_certs_windows_amd64.exe /tmp/fetch_tsa_certs_windows_amd64.exe
+RUN tar -czf /binaries/fetch_tsa_certs_windows_amd64.tar.gz -C /tmp fetch_tsa_certs_windows_amd64.exe && \
+    rm /tmp/fetch_tsa_certs_windows_amd64.exe
+
+RUN chmod -R a+rX /binaries
+
+# Final minimal image with all binaries
+FROM registry.redhat.io/ubi9/ubi-micro:9.8@sha256:b498b3ea26111ab4b81d65139f2ebd2ef9a2abb7a4588b7fdcc54889f95e9caa
+
+LABEL description="Flat image containing fetch-tsa-certs CLI binaries for all platforms and architectures"
+LABEL io.k8s.description="Flat image containing fetch-tsa-certs CLI binaries for all platforms and architectures"
+LABEL io.opencontainers.image.description="Flat image containing fetch-tsa-certs CLI binaries for all platforms and architectures"
+LABEL io.k8s.display-name="Fetch TSA certs CLI stack image for Red Hat Trusted Artifact Signer"
+LABEL io.openshift.tags="fetch-tsa-certs trusted-artifact-signer cli-stack"
+LABEL summary="Provides all fetch-tsa-certs CLI binaries as tar.gz archives for CDN distribution."
+LABEL com.redhat.component="fetch-tsa-certs-cli-stack"
+LABEL name="rhtas/fetch-tsa-certs-cli-stack"
+
+COPY --from=packager /binaries/ /binaries/
+COPY --from=build-amd64 /licenses/ /licenses/
+
+USER 65532:65532

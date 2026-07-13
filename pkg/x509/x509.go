@@ -16,6 +16,8 @@ package x509
 
 import (
 	"crypto"
+	"crypto/fips140"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/asn1"
 	"errors"
@@ -119,11 +121,45 @@ func VerifyCertChain(certs []*x509.Certificate, signer crypto.Signer, enforceInt
 		}
 	}
 
-	// Verify the signer's public key matches the leaf certificate
-	if err := cryptoutils.EqualKeys(leaf.PublicKey, signer.Public()); err != nil {
-		return err
+	// RHTAS FIPS - DO NOT REMOVE
+	// ========================================
+	// cryptoutils.EqualKeys calls SKID (SHA-1) in its error-message path,
+	// which panics under fips140=only. SHA-1 is used here only as a
+	// diagnostic key fingerprint, not for security.
+	var equalKeysErr error
+	fips140.WithoutEnforcement(func() {
+		equalKeysErr = cryptoutils.EqualKeys(leaf.PublicKey, signer.Public())
+	})
+	if equalKeysErr != nil {
+		return equalKeysErr
 	}
+	// ========================================
 
 	// Verify the key's strength
 	return goodkey.ValidatePubKey(signer.Public())
 }
+
+// RHTAS FIPS - DO NOT REMOVE
+// ========================================
+type subjectPublicKeyInfo struct {
+	Algorithm        asn1.RawValue
+	SubjectPublicKey asn1.BitString
+}
+
+// ComputeSKID computes a Subject Key Identifier using SHA-256 (truncated to 20 bytes).
+// Use instead of cryptoutils.SKID when FIPS is enabled, since cryptoutils.SKID uses SHA-1
+// which panics under fips140=only.
+func ComputeSKID(pub crypto.PublicKey) ([]byte, error) {
+	der, err := x509.MarshalPKIXPublicKey(pub)
+	if err != nil {
+		return nil, err
+	}
+	var spki subjectPublicKeyInfo
+	if _, err := asn1.Unmarshal(der, &spki); err != nil {
+		return nil, err
+	}
+	hash := sha256.Sum256(spki.SubjectPublicKey.Bytes)
+	return hash[:20], nil
+}
+
+// ========================================
