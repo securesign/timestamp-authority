@@ -17,9 +17,7 @@ package signer
 import (
 	"context"
 	"crypto"
-	"crypto/ed25519"
 	"crypto/elliptic"
-	"crypto/fips140"
 	"crypto/rand"
 	"fmt"
 	"strings"
@@ -52,14 +50,6 @@ func NewCryptoSigner(ctx context.Context, hash crypto.Hash, signer, kmsKey, tink
 			return nil, err
 		}
 		s, _, err := signer.CryptoSigner(ctx, func(_ error) {})
-		// RHTAS FIPS - DO NOT REMOVE
-		// ========================================
-		if err == nil && fips140.Enabled() {
-			if _, ok := s.Public().(ed25519.PublicKey); ok {
-				return nil, fmt.Errorf("ed25519 is not supported in FIPS mode")
-			}
-		}
-		// ========================================
 		return s, err
 	case TinkScheme:
 		primaryKey, err := GetPrimaryKey(ctx, tinkKmsKey, hcVaultToken)
