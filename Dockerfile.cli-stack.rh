@@ -9,6 +9,7 @@ ADD ./ ./
 
 RUN git config --global --add safe.directory /opt/app-root/src && \
     go mod download && \
+    go mod edit -godebug=fips140=auto && \
     make -f Build.mak cross-platform
 
 FROM --platform=linux/amd64   quay.io/securesign/fetch-tsa-certs@sha256:7a02ddc6d9ddc7b536224bb65fd3a57647c0ecb0f2bc6528703715a132a531ee AS build-amd64
