@@ -13,6 +13,7 @@
 # limitations under the License.
 
 FROM registry.redhat.io/ubi9/go-toolset:9.8-1784090680@sha256:e1ff4f548dfca084c2318d11dccd7d30a75c81a3a4fd8abcebc42ea42dd683e8 AS builder
+USER root
 ENV CGO_ENABLED=0
 ENV GOFIPS140=v1.0.0
 ENV APP_ROOT=/opt/app-root
@@ -26,6 +27,7 @@ ADD ./pkg/ $APP_ROOT/src/pkg/
 
 RUN git config --global --add safe.directory /opt/app-root/src && \
     go mod download && \
+    go mod edit -godebug=fips140=auto && \
     go build -mod=readonly -tags=no_openssl -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
 
 # debug compile options & debugger

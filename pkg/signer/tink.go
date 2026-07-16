@@ -17,10 +17,7 @@ package signer
 import (
 	"context"
 	"crypto"
-	"crypto/ed25519"
-	"crypto/fips140"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,12 +47,6 @@ func NewTinkSigner(tinkKeysetPath string, primaryKey tink.AEAD) (crypto.Signer, 
 	if err != nil {
 		return nil, err
 	}
-	// RHTAS FIPS - DO NOT REMOVE
-	// ========================================
-	if _, ok := signer.Public().(ed25519.PublicKey); ok && fips140.Enabled() {
-		return nil, fmt.Errorf("ed25519 is not supported in FIPS mode")
-	}
-	// ========================================
 	return signer, nil
 }
 

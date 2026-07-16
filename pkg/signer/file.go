@@ -66,12 +66,6 @@ func NewFileSigner(keyPath, keyPass string, hash crypto.Hash) (*File, error) {
 		}
 		return &File{signer}, nil
 	case ed25519.PrivateKey:
-		// RHTAS FIPS - DO NOT REMOVE
-		// ========================================
-		if fips140.Enabled() {
-			return nil, fmt.Errorf("ed25519 is not supported in FIPS mode")
-		}
-		// ========================================
 		signer, err := signature.LoadED25519SignerVerifier(pk)
 		if err != nil {
 			return nil, err

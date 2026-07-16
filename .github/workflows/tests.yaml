@@ -55,8 +55,6 @@ jobs:
         with:
           go-version-file: './go.mod'
           check-latest: true
-      - name: Remove RHTAS FIPS godebug for upstream Go # RHTAS FIPS - DO NOT REMOVE
-        run: go mod edit -dropgodebug=fips140
       - name: Build timestamp CLI
         run: make timestamp-cli
       - name: Run Go tests
@@ -103,8 +101,6 @@ jobs:
           go-version-file: './go.mod'
           check-latest: true
 
-      - name: Remove RHTAS FIPS godebug for upstream Go # RHTAS FIPS - DO NOT REMOVE
-        run: go mod edit -dropgodebug=fips140
       - name: golangci-lint
         uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9.2.1
         with:
