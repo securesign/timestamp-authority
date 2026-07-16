@@ -1,4 +1,4 @@
-FIPS_MODULE ?= latest
+FIPS_MODULE ?= v1.0.0
 
 .PHONY: fetch-tsa-certs-linux
 fetch-tsa-certs-linux: ## Build native Linux binary (FIPS)
