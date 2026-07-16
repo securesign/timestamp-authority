@@ -11,10 +11,10 @@ RUN git config --global --add safe.directory /opt/app-root/src && \
     go mod download && \
     make -f Build.mak cross-platform
 
-FROM --platform=linux/amd64   quay.io/securesign/fetch-tsa-certs@sha256:7a02ddc6d9ddc7b536224bb65fd3a57647c0ecb0f2bc6528703715a132a531ee AS build-amd64
-FROM --platform=linux/arm64   quay.io/securesign/fetch-tsa-certs@sha256:7a02ddc6d9ddc7b536224bb65fd3a57647c0ecb0f2bc6528703715a132a531ee AS build-arm64
-FROM --platform=linux/ppc64le quay.io/securesign/fetch-tsa-certs@sha256:7a02ddc6d9ddc7b536224bb65fd3a57647c0ecb0f2bc6528703715a132a531ee AS build-ppc64le
-FROM --platform=linux/s390x   quay.io/securesign/fetch-tsa-certs@sha256:7a02ddc6d9ddc7b536224bb65fd3a57647c0ecb0f2bc6528703715a132a531ee AS build-s390x
+FROM --platform=linux/amd64   quay.io/securesign/fetch-tsa-certs@sha256:b97f9819f7a14af10d510f09e8643ae57f5961befc0ad5427773424927e208ad AS build-amd64
+FROM --platform=linux/arm64   quay.io/securesign/fetch-tsa-certs@sha256:bc2e17cf6bb1108e8e57e8a86992e80f198d35b3379cf126b030e366a2b16c6a AS build-arm64
+FROM --platform=linux/ppc64le quay.io/securesign/fetch-tsa-certs@sha256:83e105f724ea7a34ec184856bc11a675712332dfd43aabde98cda1a240339d2e AS build-ppc64le
+FROM --platform=linux/s390x   quay.io/securesign/fetch-tsa-certs@sha256:b8f91aef84c22d4528ffe75c880abd8b6cdb67b682e9f83f59e29736c795deda AS build-s390x
 
 FROM registry.redhat.io/ubi9/go-toolset:9.8-1784090680@sha256:e1ff4f548dfca084c2318d11dccd7d30a75c81a3a4fd8abcebc42ea42dd683e8 AS packager
 USER root
