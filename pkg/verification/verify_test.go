@@ -141,6 +141,7 @@ func TestVerifyArtifactHashedMessages(t *testing.T) {
 func TestVerifyNonce(t *testing.T) {
 	type test struct {
 		nonceStr            string
+		missingNonce        bool
 		expectVerifySuccess bool
 	}
 
@@ -151,6 +152,12 @@ func TestVerifyNonce(t *testing.T) {
 		},
 		{
 			nonceStr:            "9874325235234314241230",
+			expectVerifySuccess: false,
+		},
+		{
+			// A nonce was requested but the response omits it. This must be
+			// rejected rather than panicking on the nil comparison.
+			missingNonce:        true,
 			expectVerifySuccess: false,
 		},
 	}
@@ -165,9 +172,12 @@ func TestVerifyNonce(t *testing.T) {
 			Nonce: optsNonce,
 		}
 
-		providedNonce, ok := new(big.Int).SetString(tc.nonceStr, 10)
-		if !ok {
-			t.Fatalf("unexpected failure to create big int from string: %s", tc.nonceStr)
+		var providedNonce *big.Int
+		if !tc.missingNonce {
+			providedNonce, ok = new(big.Int).SetString(tc.nonceStr, 10)
+			if !ok {
+				t.Fatalf("unexpected failure to create big int from string: %s", tc.nonceStr)
+			}
 		}
 
 		err := verifyNonce(providedNonce, opts)
@@ -271,6 +281,36 @@ func TestVerifyLeafCert(t *testing.T) {
 		if err == nil && !tc.expectVerifySuccess {
 			t.Fatal("expected error not to be nil")
 		}
+	}
+}
+
+// A certificate that asserts the CA bit but carries the timestamping EKU must
+// not be accepted as a TSA leaf, per RFC 3161 2.3.
+func TestVerifyLeafCertRejectsCACertificate(t *testing.T) {
+	criticalExtension := pkix.Extension{
+		Id:       EKUOID,
+		Critical: true,
+	}
+
+	caCert := &x509.Certificate{
+		Raw:                   []byte("abc123"),
+		RawIssuer:             []byte("abc123"),
+		SerialNumber:          big.NewInt(int64(123)),
+		Extensions:            []pkix.Extension{criticalExtension},
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageTimeStamping},
+		BasicConstraintsValid: true,
+		IsCA:                  true,
+		Subject: pkix.Name{
+			CommonName: "TSA-Service",
+		},
+	}
+
+	err := verifyLeafCert(caCert, nil, VerifyOpts{})
+	if err == nil {
+		t.Fatal("expected verification to fail for a CA certificate used as a timestamping leaf")
+	}
+	if !strings.Contains(err.Error(), "end-entity") {
+		t.Fatalf("expected an end-entity error, got %s", err.Error())
 	}
 }
 
@@ -410,6 +450,7 @@ func TestVerifyESSCertID(t *testing.T) {
 func TestVerifyLeafExtendedKeyUsage(t *testing.T) {
 	type test struct {
 		eku                 []x509.ExtKeyUsage
+		unknownEKU          []asn1.ObjectIdentifier
 		expectVerifySuccess bool
 	}
 
@@ -426,11 +467,24 @@ func TestVerifyLeafExtendedKeyUsage(t *testing.T) {
 			eku:                 []x509.ExtKeyUsage{x509.ExtKeyUsageIPSECTunnel},
 			expectVerifySuccess: false,
 		},
+		{
+			// timestamping plus an unrecognised key purpose OID, which
+			// crypto/x509 records under UnknownExtKeyUsage
+			eku:                 []x509.ExtKeyUsage{x509.ExtKeyUsageTimeStamping},
+			unknownEKU:          []asn1.ObjectIdentifier{{1, 2, 3, 4, 5}},
+			expectVerifySuccess: false,
+		},
+		{
+			// only an unrecognised key purpose, no timestamping
+			unknownEKU:          []asn1.ObjectIdentifier{{1, 2, 3, 4, 5}},
+			expectVerifySuccess: false,
+		},
 	}
 
 	for _, tc := range tests {
 		cert := x509.Certificate{
-			ExtKeyUsage: tc.eku,
+			ExtKeyUsage:        tc.eku,
+			UnknownExtKeyUsage: tc.unknownEKU,
 		}
 
 		err := verifyLeafExtendedKeyUsage(&cert)
