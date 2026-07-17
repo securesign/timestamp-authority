@@ -25,13 +25,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/mitchellh/mapstructure"
 	"github.com/rs/cors"
 	"github.com/spf13/viper"
-	"github.com/urfave/negroni"
+	"github.com/urfave/negroni/v3"
 
 	pkgapi "github.com/sigstore/timestamp-authority/pkg/api"
 	"github.com/sigstore/timestamp-authority/pkg/generated/restapi/operations"
