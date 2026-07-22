@@ -19,6 +19,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rs/cors v1.11.1
+	github.com/sigstore/model-validation-operator/pkg/tracing v0.0.0-20260613122948-a36fd5feae2c
 	github.com/sigstore/sigstore v1.10.8
 	github.com/sigstore/sigstore/pkg/signature/kms/aws v1.10.8
 	github.com/sigstore/sigstore/pkg/signature/kms/azure v1.10.8
@@ -39,7 +40,16 @@ require (
 	sigs.k8s.io/yaml v1.6.0
 )
 
-require github.com/rogpeppe/go-internal v1.15.0 // indirect
+require (
+	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2 // indirect
+	github.com/rogpeppe/go-internal v1.15.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.38.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.38.0 // indirect
+	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.43.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.44.0 // indirect
+	go.opentelemetry.io/proto/otlp v1.7.1 // indirect
+)
 
 require (
 	cloud.google.com/go v0.123.0 // indirect
@@ -143,7 +153,7 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.69.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.69.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.69.0
 	go.opentelemetry.io/otel v1.44.0 // indirect
 	go.opentelemetry.io/otel/metric v1.44.0 // indirect
 	go.opentelemetry.io/otel/trace v1.44.0 // indirect
