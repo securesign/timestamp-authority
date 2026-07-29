@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/go-toolset:9.8-1784190466@sha256:f99dd81b20e5971ef9f63a51ac27cf0aa591ff9921d021490548b67fd9b17144 as build-env
+FROM registry.redhat.io/ubi9/go-toolset:9.8-1785156757@sha256:5e231f8c5eab7812a1e2c701ce48c63eb3bb02dc9f372d8fbb59e3e1cd9c493c as build-env
 ENV GOEXPERIMENT=strictfipsruntime
 ENV CGO_ENABLED=1
 ENV APP_ROOT=/opt/app-root
@@ -14,7 +14,7 @@ ADD ./Build.mak $APP_ROOT/src/Build.mak
 
 RUN make -f Build.mak fetch-tsa-certs-linux
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:062c52ff973065752b0965787649db2bcf551a6c727a00e95a3eb42cebadbdab
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:17fd831ced9434de0a984d60b3fbe61008308261ba98bbc348d6fbdef05fa7c0
 ENV APP_ROOT=/opt/app-root
 WORKDIR $APP_ROOT/src/
 
