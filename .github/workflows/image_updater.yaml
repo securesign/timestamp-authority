@@ -9,6 +9,9 @@ on:
 jobs:
   check-image-version:
     uses: securesign/actions/.github/workflows/check-image-version.yaml@main
+    permissions:
+      contents: write
+      pull-requests: write
     strategy:
       matrix:
         branch: [main]
