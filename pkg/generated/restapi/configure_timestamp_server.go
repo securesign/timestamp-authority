@@ -31,7 +31,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/rs/cors"
 	"github.com/spf13/viper"
-	"github.com/urfave/negroni"
+	"github.com/urfave/negroni/v3"
 
 	pkgapi "github.com/sigstore/timestamp-authority/v2/pkg/api"
 	"github.com/sigstore/timestamp-authority/v2/pkg/generated/restapi/operations"
