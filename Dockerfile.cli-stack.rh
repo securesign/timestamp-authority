@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/go-toolset:9.8-1784190466@sha256:f99dd81b20e5971ef9f63a51ac27cf0aa591ff9921d021490548b67fd9b17144 AS build-cross-platform
+FROM registry.redhat.io/ubi9/go-toolset:9.8-1789040808@sha256:685ccca486cc2c82b0818d835abecb1aed7a396e76ba416cfc47c28067f5d365 AS build-cross-platform
 ENV APP_ROOT=/opt/app-root \
     GOPATH=/opt/app-root
 
@@ -17,7 +17,7 @@ FROM --platform=linux/arm64   quay.io/securesign/fetch-tsa-certs@sha256:888294cb
 FROM --platform=linux/ppc64le quay.io/securesign/fetch-tsa-certs@sha256:715861c6aef86109395467a12027445862dd9d8fc5720d5bc67ec77e950ea0c0 AS build-ppc64le
 FROM --platform=linux/s390x   quay.io/securesign/fetch-tsa-certs@sha256:1643fc2aa8e9d9b12564296ffc3159d9e4d81c63e9d7c1d0476727b65c48f6ed AS build-s390x
 
-FROM registry.redhat.io/ubi9/go-toolset:9.8-1784190466@sha256:f99dd81b20e5971ef9f63a51ac27cf0aa591ff9921d021490548b67fd9b17144 AS packager
+FROM registry.redhat.io/ubi9/go-toolset:9.8-1789040808@sha256:685ccca486cc2c82b0818d835abecb1aed7a396e76ba416cfc47c28067f5d365 AS packager
 USER root
 RUN mkdir -p /binaries
 
@@ -54,7 +54,7 @@ RUN tar -czf /binaries/fetch_tsa_certs_windows_amd64.tar.gz -C /tmp fetch_tsa_ce
 RUN chmod -R a+rX /binaries
 
 # Final minimal image with all binaries
-FROM registry.redhat.io/ubi9/ubi-micro:9.8-1782840931@sha256:35de56a9413112f1474e392ebc35e0cf6f0fb484c8e8877bbae59b513694b41f
+FROM registry.redhat.io/ubi9/ubi-micro:9.8-1789345812@sha256:7a0454cbd9bd847e8f6a63b6f0254a6efbeb6e0ed71a5d824a4f6cccbe626650
 
 LABEL description="Flat image containing fetch-tsa-certs CLI binaries for all platforms and architectures"
 LABEL io.k8s.description="Flat image containing fetch-tsa-certs CLI binaries for all platforms and architectures"
