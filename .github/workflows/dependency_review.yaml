@@ -22,6 +22,7 @@ on:
       - '**.md'
       - '.tekton/**'
       - 'LICENSE'
+      - 'renovate.json'
 
 permissions:
   contents: read
