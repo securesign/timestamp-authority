@@ -19,7 +19,24 @@ on:
   push:
     branches:
       - 'main'
+      - 'release-*'
+    paths-ignore:
+      - 'Dockerfile.cli-stack.rh'
+      - 'Dockerfile.fetch_tsa_certs.rh'
+      - 'Dockerfile.tsa.rh'
+      - '**.md'
+      - '.tekton/**'
+      - 'LICENSE'
+      - 'renovate.json'
   pull_request:
+    paths-ignore:
+      - 'Dockerfile.cli-stack.rh'
+      - 'Dockerfile.fetch_tsa_certs.rh'
+      - 'Dockerfile.tsa.rh'
+      - '**.md'
+      - '.tekton/**'
+      - 'LICENSE'
+      - 'renovate.json'
 
 permissions: {}
 
