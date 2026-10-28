@@ -11,6 +11,8 @@ on:
 
 jobs:
   sync:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
@@ -19,8 +21,11 @@ jobs:
           client-id: ${{ secrets.SYNC_APP_CLIENT_ID }}
           private-key: ${{ secrets.SYNC_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
 
-      - uses: securesign/actions/sync-upstream@main
+      - uses: securesign/actions/sync-upstream@291f53959802f9f718286fb0d3301f33066c746d # main @ 2026-10-28
         with:
           token: ${{ steps.app-token.outputs.token }}
           upstream_repo: https://github.com/sigstore/timestamp-authority

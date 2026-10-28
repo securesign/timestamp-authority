@@ -19,6 +19,8 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/elliptic"
+	"crypto/fips140"
+	"crypto/mldsa"
 	"crypto/rand"
 	"crypto/rsa"
 	"os"
@@ -29,6 +31,10 @@ import (
 )
 
 func TestNewFileSigner(t *testing.T) {
+	// RHTAS test will not pass under FIPS, sigstore encrypted keys are not supported
+	if fips140.Enabled() {
+		t.Skip("sigstore encrypted keys not supported under FIPS")
+	}
 	td := t.TempDir()
 
 	password := "password1!"
@@ -66,6 +72,25 @@ func TestNewFileSigner(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	var mldsaKey crypto.PrivateKey
+	var derMLDSA, pemMLDSA []byte
+	var mldsaKeyFile string
+	if fips140.Version() != "v1.0.0" {
+		mldsaKey, err = mldsa.GenerateKey(mldsa.MLDSA65())
+		if err != nil {
+			t.Fatal(err)
+		}
+		derMLDSA, err = cryptoutils.MarshalPrivateKeyToEncryptedDER(mldsaKey, cryptoutils.StaticPasswordFunc([]byte(password)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		pemMLDSA = cryptoutils.PEMEncode(cryptoutils.EncryptedSigstorePrivateKeyPEMType, derMLDSA)
+		mldsaKeyFile = filepath.Join(td, "mldsa-key.pem")
+		if err := os.WriteFile(mldsaKeyFile, pemMLDSA, 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
 	tests := []struct {
 		name    string
 		keyPath string
@@ -91,6 +116,12 @@ func TestNewFileSigner(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "valid ML-DSA",
+			keyPath: mldsaKeyFile,
+			keyPass: password,
+			wantErr: false,
+		},
+		{
 			name:    "invalid password",
 			keyPath: ecdsaKeyFile,
 			keyPass: "123",
@@ -100,6 +131,10 @@ func TestNewFileSigner(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			tc := tc
+			// RHTAS skipping when MLDSA not compiled in
+			if tc.keyPath == "" {
+				return
+			}
 			_, err := NewFileSigner(tc.keyPath, tc.keyPass, crypto.SHA256)
 			if tc.wantErr != (err != nil) {
 				t.Errorf("NewFileSigner() expected %t, got err %s", tc.wantErr, err)
