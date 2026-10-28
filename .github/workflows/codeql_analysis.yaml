@@ -24,6 +24,7 @@ on:
       - '**.md'
       - '.tekton/**'
       - 'LICENSE'
+      - 'renovate.json'
   pull_request:
     paths-ignore:
       - 'Dockerfile.cli-stack.rh'
@@ -32,6 +33,7 @@ on:
       - '**.md'
       - '.tekton/**'
       - 'LICENSE'
+      - 'renovate.json'
   schedule:
     - cron: '45 10 * * 1'
 
