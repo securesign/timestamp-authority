@@ -19,6 +19,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/fips140"
+	"crypto/mldsa"
 	"crypto/rsa"
 	"encoding/pem"
 	"fmt"
@@ -71,7 +72,13 @@ func NewFileSigner(keyPath, keyPass string, hash crypto.Hash) (*File, error) {
 			return nil, err
 		}
 		return &File{signer}, nil
+	case *mldsa.PrivateKey:
+		signer, err := signature.LoadMLDSASignerVerifier(pk)
+		if err != nil {
+			return nil, err
+		}
+		return &File{signer}, nil
 	default:
-		return nil, fmt.Errorf("unsupported private key type, must be RSA, ECDSA, or ED25519")
+		return nil, fmt.Errorf("unsupported private key type, must be RSA, ECDSA, ED25519, or ML-DSA")
 	}
 }

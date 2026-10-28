@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/go-toolset:9.8-1784190466@sha256:f99dd81b20e5971ef9f63a51ac27cf0aa591ff9921d021490548b67fd9b17144 as build-env
+FROM registry.access.redhat.com/hi/go:1.27@sha256:54644838229bd919c8718ab13e0696f269884e89d3ad42f052a802944d5e9903 as build-env
 USER root
 ENV APP_ROOT=/opt/app-root
 ENV GOPATH=$APP_ROOT
