@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/go-toolset:9.8-1784190466@sha256:f99dd81b20e5971ef9f63a51ac27cf0aa591ff9921d021490548b67fd9b17144 AS build-cross-platform
+FROM registry.access.redhat.com/hi/go:1.27@sha256:54644838229bd919c8718ab13e0696f269884e89d3ad42f052a802944d5e9903 AS build-cross-platform
 ENV APP_ROOT=/opt/app-root \
     GOPATH=/opt/app-root
 
@@ -14,10 +14,11 @@ RUN git config --global --add safe.directory /opt/app-root/src && \
 
 FROM --platform=linux/amd64   quay.io/securesign/fetch-tsa-certs@sha256:a5cf4785b76744425e378954ca634ba1ebc87fe369fbefb494de6b8a031e4b0d AS build-amd64
 FROM --platform=linux/arm64   quay.io/securesign/fetch-tsa-certs@sha256:3afae533c948330bae473d961b2dfc7c710f8c364fc531d90f072f4722552b94 AS build-arm64
-FROM --platform=linux/ppc64le quay.io/securesign/fetch-tsa-certs@sha256:8baaa16210bbda13aecd822cd4a6e56f3c6966b68371422ff8957d1e7ef1015c AS build-ppc64le
+# Disable ppc until go-toolset supports go1.27
+#FROM --platform=linux/ppc64le quay.io/securesign/fetch-tsa-certs@sha256:8baaa16210bbda13aecd822cd4a6e56f3c6966b68371422ff8957d1e7ef1015c AS build-ppc64le
 FROM --platform=linux/s390x   quay.io/securesign/fetch-tsa-certs@sha256:bb88984e4f24fbd8e16b8a667dd40a5862861e2035a041bad399a799539a4cb1 AS build-s390x
 
-FROM registry.redhat.io/ubi9/go-toolset:9.8-1784190466@sha256:f99dd81b20e5971ef9f63a51ac27cf0aa591ff9921d021490548b67fd9b17144 AS packager
+FROM registry.access.redhat.com/ubi9/ubi:9.8@sha256:5f08e80aa970ae77712e75e5e857ac0b396abc900823c4d041c1150a9538a13f AS packager
 USER root
 RUN mkdir -p /binaries
 
@@ -30,9 +31,10 @@ COPY --from=build-arm64 /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
 RUN tar -czf /binaries/fetch_tsa_certs_linux_arm64.tar.gz -C /tmp fetch_tsa_certs && \
     rm /tmp/fetch_tsa_certs
 
-COPY --from=build-ppc64le /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
-RUN tar -czf /binaries/fetch_tsa_certs_linux_ppc64le.tar.gz -C /tmp fetch_tsa_certs && \
-    rm /tmp/fetch_tsa_certs
+# Disable ppc until go-toolset supports go1.27
+#COPY --from=build-ppc64le /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
+#RUN tar -czf /binaries/fetch_tsa_certs_linux_ppc64le.tar.gz -C /tmp fetch_tsa_certs && \
+#    rm /tmp/fetch_tsa_certs
 
 COPY --from=build-s390x /usr/local/bin/fetch_tsa_certs /tmp/fetch_tsa_certs
 RUN tar -czf /binaries/fetch_tsa_certs_linux_s390x.tar.gz -C /tmp fetch_tsa_certs && \
