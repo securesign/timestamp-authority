@@ -39,7 +39,10 @@ require (
 	sigs.k8s.io/yaml v1.6.0
 )
 
-require github.com/rogpeppe/go-internal v1.15.0 // indirect
+require (
+	github.com/klauspost/compress v1.20.2 // indirect
+	github.com/rogpeppe/go-internal v1.15.0 // indirect
+)
 
 require (
 	cloud.google.com/go v0.123.0 // indirect
