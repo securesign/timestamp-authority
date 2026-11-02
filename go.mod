@@ -40,6 +40,7 @@ require (
 )
 
 require (
+	github.com/klauspost/compress v1.20.2 // indirect
 	github.com/rogpeppe/go-internal v1.15.0 // indirect
 	go.opentelemetry.io/otel/log v1.47.0 // indirect
 )
