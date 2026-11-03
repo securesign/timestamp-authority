@@ -16,6 +16,7 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -65,7 +66,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&enforceIntermediateEku, "enforce-intermediate-eku", true, "enforce requirement for intermediate certificates to have timestamping EKU")
 	rootCmd.PersistentFlags().BoolVar(&useHTTP201, "use-http-201", false, "use HTTP 201 Created response code instead of HTTP 200 OK for timestamp responses")
 	rootCmd.PersistentFlags().String("timestamp-signer", "memory", "Timestamping authority signer. Valid options include: [kms, tink, memory, file]. Memory and file-based signers should only be used for testing")
-	rootCmd.PersistentFlags().String("timestamp-signer-hash", "sha256", "Hash algorithm used by the signer. Must match the hash algorithm specified for a KMS or Tink key. Valid options include: [sha256, sha384, sha512]. Ignored for Memory signer.")
+	rootCmd.PersistentFlags().String("timestamp-signer-hash", "", "Hash algorithm used by the signer. Must match the hash algorithm specified for a KMS or Tink key. Valid options include: [sha256, sha384, sha512]. Ignored for Memory signer. If left unset, defaults to sha512 when --experimental-enable-pqc is set, sha256 otherwise")
 	rootCmd.PersistentFlags().Bool("include-chain-in-response", false, "Whether to include the issuing chain in the timestamp response when certReq is set in the timestamp request. When false, only the leaf certificate is included in the response.")
 	// KMS flags
 	rootCmd.PersistentFlags().String("kms-key-resource", "", "KMS key for signing timestamp responses. Valid options include: [gcpkms://resource, azurekms://resource, hashivault://resource, awskms://resource]")
@@ -86,9 +87,11 @@ func init() {
 	rootCmd.PersistentFlags().Uint64("max-request-body-size", 1048576, "Maximum allowed size for request bodies in bytes (1MB by default)")
 	rootCmd.PersistentFlags().Duration("cleanup-timeout", 620*time.Second, "grace period for which to wait before killing idle connections")
 
-	rootCmd.PersistentFlags().String("default-policy-oid", "1.3.6.1.4.1.57264.2", "Default policy OID to use if none is specified in the request")
-	rootCmd.PersistentFlags().StringSlice("accepted-policy-oids", []string{"1.3.6.1.4.1.57264.2"}, "List of policy OIDs accepted in timestamp requests")
+	rootCmd.PersistentFlags().String("default-policy-oid", "", "Default policy OID to use if none is specified in the request. If left unset, defaults to the PQC policy OID when --experimental-enable-pqc is set, or to the non-PQC policy OID otherwise")
+	rootCmd.PersistentFlags().StringSlice("accepted-policy-oids", nil, "List of policy OIDs accepted in timestamp requests. If left unset, defaults to a list containing only the default policy OID")
 	rootCmd.PersistentFlags().Bool("allow-custom-extensions", false, "Whether to allow and copy custom request extensions into the signed timestamp")
+
+	rootCmd.PersistentFlags().Bool("experimental-enable-pqc", false, "Enable experimental post-quantum signer support")
 
 	if err := viper.BindPFlags(rootCmd.PersistentFlags()); err != nil {
 		log.Logger.Fatal(err)
@@ -116,8 +119,17 @@ func initConfig() {
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
+	// If a config file is found, read it in. A config file that exists but
+	// cannot be read or parsed must not be ignored: every setting would fall
+	// back to its flag default, and the default signer is the in-memory one,
+	// so the server would come up issuing timestamps under a self-signed key
+	// generated at startup instead of the configured KMS, Tink or file signer.
+	// Only "no config file anywhere in the search path" is benign.
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := errors.AsType[viper.ConfigFileNotFoundError](err); !ok {
+			log.Logger.Fatalf("error reading config file: %v", err)
+		}
+	} else {
 		log.Logger.Infof("Using config file: %s", viper.ConfigFileUsed())
 	}
 }

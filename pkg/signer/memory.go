@@ -18,7 +18,6 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"crypto/fips140"
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -27,7 +26,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/sigstore/sigstore/pkg/cryptoutils"
 	tsx509 "github.com/sigstore/timestamp-authority/v2/pkg/x509"
 )
 
@@ -40,12 +38,7 @@ func NewTimestampingCertWithChain(signer crypto.Signer) ([]*x509.Certificate, er
 	if err != nil {
 		return nil, fmt.Errorf("generating in-memory root key")
 	}
-	sn, err := cryptoutils.GenerateSerialNumber()
-	if err != nil {
-		return nil, fmt.Errorf("generating root serial number: %w", err)
-	}
 	rootCA := &x509.Certificate{
-		SerialNumber: sn,
 		Subject: pkix.Name{
 			CommonName:   "Test TSA Root",
 			Organization: []string{"local"},
@@ -66,16 +59,11 @@ func NewTimestampingCertWithChain(signer crypto.Signer) ([]*x509.Certificate, er
 	}
 
 	// generate subordinate
-	sn, err = cryptoutils.GenerateSerialNumber()
-	if err != nil {
-		return nil, fmt.Errorf("generating subordinate serial number: %w", err)
-	}
 	subPriv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		return nil, fmt.Errorf("generating in-memory subordinate key")
 	}
 	subCA := &x509.Certificate{
-		SerialNumber: sn,
 		Subject: pkix.Name{
 			CommonName:   "Test TSA Intermediate",
 			Organization: []string{"local"},
@@ -97,39 +85,20 @@ func NewTimestampingCertWithChain(signer crypto.Signer) ([]*x509.Certificate, er
 	}
 
 	// generate leaf
-	sn, err = cryptoutils.GenerateSerialNumber()
-	if err != nil {
-		return nil, fmt.Errorf("generating leaf serial number: %w", err)
-	}
 	timestampExt, err := asn1.Marshal([]asn1.ObjectIdentifier{tsx509.EKUTimestampingOID})
 	if err != nil {
 		return nil, err
 	}
 
-	// RHTAS FIPS - DO NOT REMOVE
-	// ========================================
-	var skid []byte
-	if fips140.Enabled() {
-		skid, err = tsx509.ComputeSKID(signer.Public())
-	} else {
-		skid, err = cryptoutils.SKID(signer.Public())
-	}
-	if err != nil {
-		return nil, err
-	}
-	// ========================================
-
 	cert := &x509.Certificate{
-		SerialNumber: sn,
 		Subject: pkix.Name{
 			CommonName:   "Test TSA Timestamping",
 			Organization: []string{"local"},
 		},
-		SubjectKeyId: skid,
-		NotBefore:    now.Add(-3 * time.Minute),
-		NotAfter:     now.AddDate(9, 0, 0),
-		IsCA:         false,
-		KeyUsage:     x509.KeyUsageDigitalSignature,
+		NotBefore: now.Add(-3 * time.Minute),
+		NotAfter:  now.AddDate(9, 0, 0),
+		IsCA:      false,
+		KeyUsage:  x509.KeyUsageDigitalSignature,
 		// set EKU to x509.ExtKeyUsageTimeStamping but with a critical bit
 		ExtraExtensions: []pkix.Extension{
 			{

@@ -1,8 +1,9 @@
 FIPS_MODULE ?= v1.0.0
 
+# buildVersion override is necessary while using hummingbird, it should be removed when go-toolset supports go1.27.3
 .PHONY: fetch-tsa-certs-linux
 fetch-tsa-certs-linux: ## Build native Linux binary (FIPS)
-	env CGO_ENABLED=0 GOFIPS140=v1.0.0 go build -mod=readonly -tags=no_openssl -buildvcs=false -o fetch_tsa_certs -trimpath ./cmd/fetch-tsa-certs
+	env CGO_ENABLED=0 GOFIPS140=v1.0.0 go build -mod=readonly -tags=no_openssl -buildvcs=false -ldflags "-X runtime.buildVersion=go1.27.3" -o fetch_tsa_certs -trimpath ./cmd/fetch-tsa-certs
 
 .PHONY:
 cross-platform: fetch-tsa-certs-darwin-arm64 fetch-tsa-certs-darwin-amd64 fetch-tsa-certs-windows ## Build all distributable (cross-platform) binaries

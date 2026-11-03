@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.26.4@sha256:f96cc555eb8db430159a3aa6797cd5bae561945b7b0fe7d0e284c63a3b291609 AS builder
+# Debian 13 (Trixie) image to build binary for distroless/static-debian13
+FROM --platform=$BUILDPLATFORM golang:1.27.3-trixie@sha256:1896654cfc5c2b5ad74c07f29cb36f5d2d1cbed42e3054070fbfe444e521e83c AS builder
+ARG TARGETOS
+ARG TARGETARCH
 ENV APP_ROOT=/opt/app-root
 ENV GOPATH=$APP_ROOT
 
@@ -25,28 +28,62 @@ ADD ./cmd/ $APP_ROOT/src/cmd/
 ADD ./pkg/ $APP_ROOT/src/pkg/
 
 ARG SERVER_LDFLAGS
-RUN go build -ldflags "${SERVER_LDFLAGS}" ./cmd/timestamp-server
-RUN CGO_ENABLED=0 go build -gcflags "all=-N -l" -ldflags "${SERVER_LDFLAGS}" -o timestamp-server_debug ./cmd/timestamp-server
+# Build server for deployment
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 go build -ldflags "${SERVER_LDFLAGS}" -o timestamp-server ./cmd/timestamp-server
 
-# debug compile options & debugger
-FROM registry.redhat.io/ubi9/go-toolset:9.8-1784190466@sha256:ad9d042375cef55890db3378ced9d0cebd74656bc8dc4c3b0cdbea31b85ce459 as debug
-RUN go install github.com/go-delve/delve/cmd/dlv@v1.9.0
+ARG CLI_LDFLAGS
+# Build CLI for deployment
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 go build -ldflags "${CLI_LDFLAGS}" -o timestamp-cli ./cmd/timestamp-cli
 
-# overwrite server and include debugger
-COPY --from=builder /opt/app-root/src/timestamp-server_debug /usr/local/bin/timestamp-server
-
-# Multi-Stage production build
-FROM golang:1.26.4@sha256:f96cc555eb8db430159a3aa6797cd5bae561945b7b0fe7d0e284c63a3b291609 AS deploy
-
+# Production deployment build
+FROM gcr.io/distroless/static-debian13:nonroot@sha256:516757106de35205efb70b91ba03f6f1298424a0678c603255cf2852a7000087 AS deploy
 # Retrieve the binary from the previous stage
 COPY --from=builder /opt/app-root/src/timestamp-server /usr/local/bin/timestamp-server
-
 # Set the binary as the entrypoint of the container
 CMD ["timestamp-server", "serve"]
 
-# debug compile options & debugger
-FROM deploy AS debug
-RUN go install github.com/go-delve/delve/cmd/dlv@v1.22.1
+# Local deployment build (includes a shell and curl)
+FROM golang:1.27.3-trixie@sha256:1896654cfc5c2b5ad74c07f29cb36f5d2d1cbed42e3054070fbfe444e521e83c AS local-deploy
+# Retrieve the binary from the previous stage
+COPY --from=builder /opt/app-root/src/timestamp-server /usr/local/bin/timestamp-server
+# Set the binary as the entrypoint of the container
+CMD ["timestamp-server", "serve"]
 
-# overwrite server and include debugger
-COPY --from=builder /opt/app-root/src/timestamp-server_debug /usr/local/bin/timestamp-server
+# CLI deployment build
+FROM gcr.io/distroless/static-debian13:nonroot@sha256:516757106de35205efb70b91ba03f6f1298424a0678c603255cf2852a7000087 AS deploy-cli
+# Retrieve the binary from the previous stage
+COPY --from=builder /opt/app-root/src/timestamp-cli /usr/local/bin/timestamp-cli
+# Set the binary as the entrypoint of the container
+ENTRYPOINT ["timestamp-cli"]
+
+# Cross-compile dlv for the debug stage
+FROM builder AS dlvbuilder
+ARG TARGETOS
+ARG TARGETARCH
+ENV APP_ROOT=/opt/app-root
+ENV GOPATH=$APP_ROOT
+# Create a directory where 'go install' may install the cross-compiled binary,
+# if the build and target platform differ.
+RUN mkdir -p /opt/app-root/bin/${TARGETOS}_${TARGETARCH}
+# Install dlv
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/go-delve/delve/cmd/dlv@latest
+
+# Build debug binary
+FROM builder AS debug-builder
+ARG TARGETOS
+ARG TARGETARCH
+ARG SERVER_LDFLAGS
+# Build server for debugger with compiler optimizations disabled
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 go build -gcflags "all=-N -l" -ldflags "${SERVER_LDFLAGS}" -o timestamp-server_debug ./cmd/timestamp-server
+
+# Multi-stage debugger build
+FROM golang:1.27.3-trixie@sha256:1896654cfc5c2b5ad74c07f29cb36f5d2d1cbed42e3054070fbfe444e521e83c AS debug
+ARG TARGETOS
+ARG TARGETARCH
+# Copy dlv binary, either from bin/ when the build and target platform are the same, or
+# from bin/TARGETOS_TARGETARCH when the platforms are different.
+COPY --from=dlvbuilder /opt/app-root/bin/dlv* /opt/app-root/bin/${TARGETOS}_${TARGETARCH}/dlv* /usr/local/bin/
+# Overwrite server binary
+COPY --from=debug-builder /opt/app-root/src/timestamp-server_debug /usr/local/bin/timestamp-server
+# Set the binary as the entrypoint of the container
+CMD ["timestamp-server", "serve"]
