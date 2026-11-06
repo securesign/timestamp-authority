@@ -38,6 +38,10 @@ linters:
           - staticcheck
         path: pkg/signer/tink.go
         text: SA1019
+      - linters:
+          - staticcheck
+        path: pkg/x509/x509.go
+        text: SA1019
     paths:
       - third_party$
       - builtin$
