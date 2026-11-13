@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/go-toolset:9.8-1792906297@sha256:c51f0f31cbaa7e91dede6013f636d54fe10dd7d581cfc4cda014ba9d62bcd779 as build-env
+FROM registry.redhat.io/ubi9/go-toolset:9.9-1794518352@sha256:4053e919374d739ee6b0007e412d89256b0bd065e0bc690c2b3905bbaab6500e as build-env
 USER root
 ENV APP_ROOT=/opt/app-root
 ENV GOPATH=$APP_ROOT
@@ -16,7 +16,7 @@ ADD ./Build.mak $APP_ROOT/src/Build.mak
 RUN go mod edit -godebug=fips140=auto && \
     make -f Build.mak fetch-tsa-certs-linux
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:6f3a78179e0b30b930a186e7f68a4af52e51bb82406c9653be10bddd624e40f5
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:baafce2d34783a28b4a472779f304e97e00f9d35c99553bc53b068b14344d9a9
 ENV APP_ROOT=/opt/app-root
 WORKDIR $APP_ROOT/src/
 
