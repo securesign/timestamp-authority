@@ -3,14 +3,14 @@ module github.com/sigstore/timestamp-authority/v2
 go 1.26.10
 
 require (
-	cloud.google.com/go/security v1.29.0
+	cloud.google.com/go/security v1.29.1
 	github.com/beevik/ntp v1.6.0
-	github.com/digitorus/pkcs7 v0.0.0-20250730155240-ffadbf3f398c
-	github.com/digitorus/timestamp v0.0.0-20250524132541-c45532741eea
+	github.com/digitorus/pkcs7 v0.0.0-20261104125046-a476de3098e4
+	github.com/digitorus/timestamp v0.0.0-20260914073129-b4b58b92aa51
 	github.com/go-chi/chi/v5 v5.5.0
 	github.com/go-openapi/errors v0.22.9
-	github.com/go-openapi/loads v0.25.3
-	github.com/go-openapi/runtime v0.33.4
+	github.com/go-openapi/loads v0.25.4
+	github.com/go-openapi/runtime v0.33.5
 	github.com/go-openapi/spec v1.0.1
 	github.com/go-openapi/strfmt v0.27.4
 	github.com/go-openapi/swag/cmdutils v0.29.2
@@ -23,23 +23,23 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.25.0
 	github.com/rs/cors v1.11.1
-	github.com/sigstore/sigstore v1.10.11
-	github.com/sigstore/sigstore/pkg/signature/kms/aws v1.10.11
-	github.com/sigstore/sigstore/pkg/signature/kms/azure v1.10.11
-	github.com/sigstore/sigstore/pkg/signature/kms/gcp v1.10.11
-	github.com/sigstore/sigstore/pkg/signature/kms/hashivault v1.10.11
+	github.com/sigstore/sigstore v1.11.4
+	github.com/sigstore/sigstore/pkg/signature/kms/aws v1.11.4
+	github.com/sigstore/sigstore/pkg/signature/kms/azure v1.11.4
+	github.com/sigstore/sigstore/pkg/signature/kms/gcp v1.11.4
+	github.com/sigstore/sigstore/pkg/signature/kms/hashivault v1.11.4
 	github.com/spf13/cobra v1.10.2
-	github.com/spf13/pflag v1.0.10
+	github.com/spf13/pflag v1.1.0
 	github.com/spf13/viper v1.21.0
 	github.com/tink-crypto/tink-go-awskms/v3 v3.0.0
-	github.com/tink-crypto/tink-go-gcpkms/v2 v2.3.0
+	github.com/tink-crypto/tink-go-gcpkms/v2 v2.4.0
 	github.com/tink-crypto/tink-go-hcvault/v2 v2.5.0
 	github.com/tink-crypto/tink-go/v2 v2.9.0
 	github.com/urfave/negroni/v3 v3.1.2
-	go.step.sm/crypto v0.91.1
+	go.step.sm/crypto v0.92.1
 	go.uber.org/goleak v1.3.0
 	go.uber.org/zap v1.28.0
-	golang.org/x/net v0.62.0
+	golang.org/x/net v0.63.0
 	google.golang.org/protobuf v1.36.12
 	sigs.k8s.io/release-utils v0.12.5
 	sigs.k8s.io/yaml v1.6.0
